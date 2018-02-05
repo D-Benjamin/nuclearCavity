@@ -1,0 +1,11 @@
+% --- Detectors:
+
+ene grid 4 nj20
+
+ene grid2 3 1000 1e-6 20
+
+det detector de grid
+
+det detector2 de grid2
+
+set dt 1

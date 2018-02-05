@@ -1,0 +1,22 @@
+% --- Material:
+
+mat fuel_nominal    -2  
+Li-6.09c            15
+Li-7.09c            185
+F-19.09c            400 
+Be-9.09c            100
+U-235.09c           9.11
+
+mat fuel_high_temp  -2
+Li-6.12c            15
+Li-7.12c            185
+F-19.12c            400 
+Be-9.12c            100
+U-235.12c           9.11
+
+mat fuel_low_rho    -1.9  
+Li-6.09c            15
+Li-7.09c            185
+F-19.09c            400 
+Be-9.09c            100
+U-235.09c           9.11

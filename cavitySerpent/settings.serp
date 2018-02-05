@@ -1,0 +1,12 @@
+% --- Settings:
+set acelib "/Users/rodrigo/opt/Serpent2/xsdata/XSdata_jeff311/sss_jeff311u.xsdata"
+
+set pop 1000 10000 100
+
+set power 1000000000 % 1 GWth
+
+set ures 1
+
+set gcu 0
+
+set nfg 6 [0.0007485 0.005531 0.02479 0.4979 2.231]

@@ -1,0 +1,311 @@
+#!/bin/sh
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+exe="GeN-Foam"
+
+# Meshes
+fluidMechanics="fluidRegion"
+neutronics="neutroRegion"
+thermoMechanics="thermoMechanicalRegion"
+
+cases="0.1 0.2 0.3 1.1 1.3 1.5"
+
+runMapFields()
+{
+    printf "Running mapFields for $3 from case $2 to $1..."
+    mapFields $2 -case $1 -sourceRegion $3 -targetRegion $3 -sourceTime latestTime -consistent > $1/log.mapFields.$3 2>&1
+    case "$2" in
+    $fluidRef )
+        cp $2/250/fluidRegion/phi* $1/250/fluidRegion/      # workaround for phi, which is not mapped by mapFields
+        ;;
+    $neutroRef )
+        cp $2/50/neutroRegion/reactorState* $1/250/neutroRegion/ # workaround for reactorState, which is not mapped by mapFields
+        cp $2/50/fluidRegion/volFuelPower* $1/250/fluidRegion/ #workaround due to GeN-Foam only mapping from neutronics to thermal-hydraulics when solveNeutronics is called
+        ;;
+    esac
+    printf "Fields mapped!\n"
+}
+
+runBlockMesh()
+{
+    printf "Running blockMesh in case $1 for all regions..."
+    blockMesh -case $1 -region $fluidMechanics > $1/log.blockMesh.$fluidMechanics 2>&1
+    blockMesh -case $1 -region $neutronics > $1/log.blockMesh.$neutronics 2>&1
+    blockMesh -case $1 -region $thermoMechanics > $1/log.blockMesh.$thermoMechanics 2>&1
+    printf "Mesh created!\n"
+}
+
+activateBuoyancy() # $1 = case folder
+{
+    printf "Activating buoyancy (adding gravity acceleration)..."
+    gDict="$1/constant/$fluidMechanics/g"
+    sed -e s/"\(value[ \t]*\) ( 0 0 0 );"/"\1 ( 0 -9.81 0 );"/g $gDict > temp.$$
+    mv temp.$$ $gDict
+    printf "Buoyancy acitvated!\n"
+}
+
+modifyTopWallVelocity() # $1 = case folder, $2 = new velocity
+{
+    printf "Modifying top wall velovity of case $1 to $2 m/s..."
+    UDict="$1/0/$fluidMechanics/U"
+    sed s/"0.5 0 0"/"$2 0 0"/g $UDict > temp.$$
+    mv temp.$$ $UDict
+    printf "Top wall velocity modified!\n"
+}
+
+modifyPower() # $1 = case folder, $2 = new power
+{
+    printf "Modifying power of case $1 to $2 W..."
+    PDict="$1/constant/$neutronics/nuclearData"
+    sed -e s/"\(pTarget[ \t]*\) 1.000000e+09;"/"\1 $2;"/g $PDict > temp.$$
+    mv temp.$$ $PDict
+    printf "Power modified!\n"
+}
+
+beff_promp()
+{
+    printf "Setting Chi Delayed to 0 for all groups"
+    NDict="$1/constant/$neutronics/nuclearData"
+    sed -e s/"\(chiDelayed nonuniform List<scalar> 6 [ \t]*(\) .*$"/"\1 0 0 0 0 0 0 );"/g $NDict > temp.$$
+    mv temp.$$ $NDict
+    printf "Chi Delayed modified!\n"
+}
+
+# PHASE 0 - single physics testing
+
+setNeutronicsCase() # case 0.2
+{
+    printf "Setting case 0.2...\n"
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(endTime[ \t]*\) 250;"/"\1 50;"/g \
+    -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
+    printf "Case set!\n\n"
+}
+
+setEnergyCase() # case 0.3
+{
+    printf "Setting case 0.3...\n"
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(startTime[ \t]*\) 0;"/"\1 250;"/g \
+    -e s/"\(endTime[ \t]*\) 250;"/"\1 400;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
+    runMapFields $caseName $fluidRef $fluidMechanics
+    runMapFields $caseName $neutroRef $neutronics
+    runMapFields $caseName $fluidRef $thermoMechanics
+    printf "Case set!\n\n"
+}
+
+# PHASE 1 - multi-physics testing
+
+# case 1.1
+# Testing of DNP drift functionatilities
+# Flow field is mapped from case 0.1
+# Flux field is initialized from case 0.2 (for quicker convergence)
+# Solve for neutronics (with DNP drift)
+
+setCirculatingFuelCase()
+{
+    printf "Setting case 1.1...\n"
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(startTime[ \t]*\) 0;"/"\1 250;"/g \
+    -e s/"\(endTime[ \t]*\) 250;"/"\1 350;"/g \
+    -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
+    runMapFields $caseName $fluidRef $fluidMechanics
+    runMapFields $caseName $neutroRef $neutronics
+    runMapFields $caseName $fluidRef $thermoMechanics
+    printf "Case set!\n\n"
+}
+
+# case 1.3
+# Test feedback on neutronics from thermal-hydraulics
+# Flow field is mapped from case 0.1
+# Flux field is initialized from case 0.2 (for quicker convergence)
+# Solve for energy and neutronics
+
+setPowerCouplingCase()
+{
+    printf "Setting case 1.3...\n"
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(startTime[ \t]*\) 0;"/"\1 250;"/g \
+    -e s/"\(endTime[ \t]*\) 250;"/"\1 400;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
+    runMapFields $caseName $fluidRef $fluidMechanics
+    runMapFields $caseName $neutroRef $neutronics
+    runMapFields $caseName $fluidRef $thermoMechanics
+    printf "Case set!\n\n"
+}
+
+# case 1.5
+# Test natural circulation capabilities
+# Nothing is mapped from previous solutions!
+
+setBuoyancyCase()
+{
+    printf "Setting case 1.5...\n"
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(endTime[ \t]*\) 250;"/"\1 350;"/g \
+    -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 0.05;"/g \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
+    activateBuoyancy $caseName
+    modifyTopWallVelocity $caseName 0 #stop top wall movement
+    printf "Case set!\n\n"
+}
+
+# cases 1.7 (many cases!)
+
+setFullCoupling() # $1 = case velocity, $2 = case power
+{   
+    printf "Setting case $caseName with power $1 and top wall velocity $2...\n"
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
+    activateBuoyancy $caseName
+    modifyTopWallVelocity $caseName $1
+    modifyPower $caseName $2
+    printf "Case set!\n\n"
+}
+
+# PHASE 2 - transient capabilities testing
+
+fluidRef="0.1"
+neutroRef="0.2"
+energyRef="0.3" # not used at the moment, but could be used to accelerate case 1.3
+
+for caseName in $cases
+do
+    printf "Preparing to run case $caseName...\n"
+
+    printf "Cloning rootCase to case $caseName..."
+    cloneCase rootCase $caseName
+    printf "rootCase cloned!\n"
+
+    runBlockMesh $caseName
+
+    case "$caseName" in
+    "0.1")
+        printf "Case 0.1 is prepared!\n"
+        ;;
+    "0.2")
+        printf "Case 0.2 entered...\n"
+        setNeutronicsCase
+        ;;
+    "0.3")
+        printf "Case 0.3 entered...\n"
+        setEnergyCase
+        ;;
+    "1.1")
+        printf "Case 1.1 entered...\n"
+        setCirculatingFuelCase
+        ;;
+    "1.3")
+        printf "Case 1.3 entered...\n"
+        setPowerCouplingCase
+        ;;
+    "1.5")
+        printf "Case 1.5 entered...\n"
+        setBuoyancyCase
+        ;;
+    esac
+
+    #( cd $caseName && runApplication `getApplication` )
+    printf "Running $exe on $caseName\n"
+    $exe -case $caseName 2>&1 | tee "$caseName/log.$exe"
+done
+
+power="0.0 0.2 0.4 0.6 0.8 1.0"
+velocity="0.0 0.1 0.2 0.3 0.4 0.5"
+
+if [ ! -d "1.7" ] ; then
+    mkdir "1.7"
+fi
+
+cd "1.7"
+pwd
+for powerI in $power
+do
+    for velocityI in $velocity
+    do
+        caseName="1.7_P${powerI}_U${velocityI}"
+
+        printf "Preparing to run case $caseName...\n"
+
+        printf "Cloning rootCase to case $caseName..."
+        cloneCase ../rootCase $caseName
+        printf "rootCase cloned!\n"
+
+        runBlockMesh $caseName
+
+        if [ $powerI = "0.0" ]; then
+            power0="0.0000001"
+            setFullCoupling $velocityI $power0
+        else
+            setFullCoupling $velocityI "${powerI}e+09"
+        fi
+
+        printf "Running $exe on $caseName\n"
+        $exe -case $caseName 2>&1 | tee "$caseName/log.$exe"
+    done
+done
+
+
+# while getopts ":ahp:rt:" opt;do
+#     case $opt in
+#     a)
+#         printf "Executing ALL cases! This will take a long time... go do something else for 2 DAYS!\n\n"
+#         # Also check if the case is not already run (exists and has last timestep). If it does, skip and issue warning on &2.
+#         ;;
+#     h)
+#         printf "Help!\n\n"
+#         ;;
+#     p)
+#         printf "Preparing cases\n\n"
+#         ;;
+#     r)
+#         printf "Running existing cases\n\n"
+#         # check if the case was not run already (exists and has last timestep). If it does, skip and issue warning on &2.
+#         ;;
+#     t)
+#         printf "Test single physics coupled stages full coupling\n\n"
+#         # fairly complex function that takes $OPTARG string and does stuff
+#         ;;
+#     \?)
+#         printf "Invalid option: -$OPTARG\nExecute Allrun -h for help on using the script.\n" >&2
+#         ;;
+#     esac
+# done
+
+#------------------------------------------------------------------------------

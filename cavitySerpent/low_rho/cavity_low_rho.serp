@@ -1,0 +1,18 @@
+set title "nuclear_cavity_low_rho"
+
+set seed 1516789437
+
+% --- Geometry:
+
+surf s1 cube 0.0 0.0 0.0 100.0
+
+cell c1 0 fuel_low_rho -s1
+cell out 0 outside s1
+
+set bc 1 2 1
+
+%set sym 0
+
+include "../detectors.serp"
+include "../materials.serp"
+include "../settings.serp"
