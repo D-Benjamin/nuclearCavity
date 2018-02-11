@@ -27,6 +27,7 @@ zones
     
     cavity
     {
+        /*
         externalHeatTransferCoefficient 1e6;
         externalT           900;
         volumetricAreaSS    1;
@@ -43,6 +44,7 @@ zones
         nusseltPrExpLam     (0 0 0); // c in A*Re^b*Pr^c + D for Nusslet (laminar case)
         nusseltConstTurb2   (1e7 1e7 1e7) ; // D in A*Re^b*Pr^c + D for Nusslet (turbulent case)
         nusseltConstLam2    (1e7 1e7 1e7) ; // D in A*Re^b*Pr^c + D for Nusslet (laminar case)
+        */
     }
     
 );

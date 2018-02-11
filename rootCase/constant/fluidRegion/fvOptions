@@ -1,0 +1,93 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  5                                     |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      fvOptions;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+energySink
+{
+    type        scalarCodedSource;
+
+    active      true;
+
+    name        energySink;
+
+    scalarCodedSourceCoeffs
+    {
+        selectionMode   all;
+        
+        fields          (h);
+
+        codeInclude
+        #{
+            
+        #};
+
+        codeCorrect
+        #{
+            Pout<< "**codeCorrect**" << endl;
+        #};
+
+        codeAddSup
+        #{
+            scalarField& heSource = eqn.source();
+
+            const Time& time = mesh().time();
+
+            const scalarField& V = mesh_.V();
+            const volScalarField& T = mesh_.lookupObject<volScalarField>("T");
+            const scalarField TCells(T, cells_);
+            
+            scalar extT = 900;
+            scalarField deltaTCells(cells_.size(), 0);
+
+            forAll(deltaTCells, i)
+            {
+                deltaTCells[i] = TCells[i] - extT;
+            }
+
+            scalar htCoef = 1e6;
+            
+            scalar amplitude = 0;
+            scalar period = 1.25;
+            scalar tau = constant::mathematical::twoPi;
+
+            htCoef += htCoef*amplitude*sin(tau/period*time.value());
+
+            heSource += htCoef*deltaTCells*V;
+        #};
+
+        codeSetValue
+        #{
+            Pout<< "**codeSetValue**" << endl;
+        #};
+
+        // Dummy entry. Make dependent on above to trigger recompilation
+        code
+        #{
+            $codeInclude
+            $codeCorrect
+            $codeAddSup
+            $codeSetValue
+        #};
+    }
+
+    energySinkCoeffs
+    {
+        $scalarCodedSourceCoeffs;
+    }
+}
+
+
+// ************************************************************************* //
