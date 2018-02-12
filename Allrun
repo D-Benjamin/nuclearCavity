@@ -85,7 +85,6 @@ setNeutronicsCase() # case 0.2
     -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
     -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
     -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
     $controlDict > temp.$$
     mv temp.$$ $controlDict
     printf "Case set!\n\n"
@@ -126,7 +125,6 @@ setCirculatingFuelCase()
     -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
     -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
     -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
     $controlDict > temp.$$
     mv temp.$$ $controlDict
     runMapFields $caseName $fluidRef $fluidMechanics
@@ -151,7 +149,6 @@ setPowerCouplingCase()
     -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
     -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
     -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
     $controlDict > temp.$$
     mv temp.$$ $controlDict
     runMapFields $caseName $fluidRef $fluidMechanics
@@ -173,7 +170,6 @@ setBuoyancyCase()
     -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 0.05;"/g \
     -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
     -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
     $controlDict > temp.$$
     mv temp.$$ $controlDict
     activateBuoyancy $caseName
@@ -190,7 +186,6 @@ setFullCoupling() # $1 = case velocity, $2 = case power
     sed \
     -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
     -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    -e s/"\(eigenvalueNeutronics[ \t]*\) false;"/"\1 true;"/g \
     $controlDict > temp.$$
     mv temp.$$ $controlDict
     activateBuoyancy $caseName
