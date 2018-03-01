@@ -13,18 +13,16 @@ FoamFile
     location        "constant";
     object          neutronicsProperties;
 }
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-SP3Neutronics   false;
+SP3Neutronics           false;
 
-eigenvalueNeutronics true;
+eigenvalueNeutronics    true;
 
-liquidFuel      true;
+fastNeutrons            true;
 
-fastNeutrons    true;
+adjustDiscFactors       false;
 
-adjustDiscFactors false;
-
-useGivenDiscFactors false;
-
+useGivenDiscFactors     false;
 
 // ************************************************************************* //
