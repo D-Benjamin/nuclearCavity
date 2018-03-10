@@ -22,9 +22,6 @@ FoamFile
 energyGroups 6 ;
 precGroups 8 ;
 
-pTarget 1.000000e+09 ;
-keff 1.000000e+00 ;
-
 zones
 (
     cavity
