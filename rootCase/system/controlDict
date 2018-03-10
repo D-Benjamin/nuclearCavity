@@ -35,9 +35,9 @@ maxDeltaT           1.0; // max time step
 
 writeControl        runTime;//timeStep;//runTime;//adjustableRunTime;
 
-writeInterval       1;
+writeInterval       5;
 
-purgeWrite          0;
+purgeWrite          2;
 
 writeFormat         ascii;
 
@@ -55,68 +55,29 @@ runTimeModifiable   true;
 
 // Physics to solve
 
-tighltyCoupled          false; // if true it iterates on energy, fuel temp, thermal-mechanics and neutronics (not necessary for very short time steps)
-
 solveFluidMechanics     true;
 
 solveEnergy             false;
 
 solveNeutronics         false;
 
-SP3Neutronics           false; //for SP3 instead of diffusion (no accelerations available for the moment)
-
-eigenvalueNeutronics    false;
-
 solveThermalMechanics   false;
 
-compr                   false; // true for compressible simulation
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-liquidFuel              true; // eg, MSRs
+// Global simulation options
 
-fastNeutrons            true; // if true interpolates cross section with logarithmic temp for fuel (otherwise, square root)
+compr       false; // true for compressible simulation
+
+liquidFuel  true;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Solution control
 
-maxCo                       1; // should be below 1 for CFL condition (necessary to guarantee stability if solving NS)
+maxCo               1; // should be below 1 for CFL condition (necessary to guarantee stability if solving NS)
 
-maxPowerVariation           0.025; //max power variation in each time step
+maxPowerVariation   0.025; //max power variation in each time step
 
-timeStepResidual            0.00005; // required accuracy for the coupling
-
-neutronIterationResidual    0.000001; // required accuracy for the coupling of different energy groups
-
-maxTimeStepIterations       3;
-
-maxNeutronIterations        50; // up to 3-400 if no acceleration techniques 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-// Acceleration of time dependent neutronic solution
-
-integralPredictor   false; // integral neutron balance made at each time step to predict fluxes at next step (can be unstable)
-
-implicitPredictor   false;
-
-ROMAcceleration     false;
-
-aitkenAcceleration  false;
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-// highly specific options from here on 
-
-adjustDiscFactors   false;
-
-//groupsWoDF         (0 1 2 3 4 5 6 7 8 9 14 15 16 17 18 19 20 21 22 23);
-
-useGivenDiscFactors false;
-
-//doNotParametrize   ();
 
 // ************************************************************************* //
-
-
-
-

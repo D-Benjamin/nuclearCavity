@@ -59,8 +59,8 @@ energySink
 
             scalar htCoef = 1e6;
             
-            scalar amplitude = 0;
-            scalar period = 1.25;
+            scalar amplitude = 0; // 0.1
+            scalar period = 1.25; // 1.25, 2.5, 5, 10, 20, 40, 80 (i=0, for i < 7, i++ {period = 1.25 * 2**i})
             scalar tau = constant::mathematical::twoPi;
 
             htCoef += htCoef*amplitude*sin(tau/period*time.value());
