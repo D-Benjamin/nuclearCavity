@@ -59,8 +59,8 @@ modifyTopWallVelocity() # $1 = case folder, $2 = new velocity
 modifyPower() # $1 = case folder, $2 = new power
 {
     printf "Modifying power of case $1 to $2 W..."
-    PDict="$1/constant/$neutronics/nuclearData"
-    sed -e s/"\(pTarget[ \t]*\) 1.000000e+09;"/"\1 $2;"/g $PDict > temp.$$
+    PDict="$1/0/$neutronics/reactorState"
+    sed -e s/"\(pTarget[ \t]*\) 1.0e+09;"/"\1 $2;"/g $PDict > temp.$$
     mv temp.$$ $PDict
     printf "Power modified!\n"
 }

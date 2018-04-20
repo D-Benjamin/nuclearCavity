@@ -51,7 +51,7 @@ laplacianSchemes
     laplacian(alphaEff,h)   Gauss linear limited corrected 0.333;
     laplacian(DkEff,k)      Gauss linear limited corrected 0.333;
     laplacian(DepsilonEff,epsilon)  Gauss linear limited corrected 0.333;
-    laplacian(DREff,R)      Gauss linear limited corrected 0.333;
+    laplacian(DREff,R)              Gauss linear limited corrected 0.333;
     laplacian((rho*nuEff),U)        Gauss linear limited corrected 0.333;
     laplacian(thermo:alpha,h)       Gauss linear limited corrected 0.333;
 }

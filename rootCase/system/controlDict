@@ -19,11 +19,12 @@ FoamFile
 
 application         GeN-Foam;
 
-startFrom           startTime;//startTime;//latestTime;
+startFrom           startTime;
+// startFrom           latestTime;
 
 startTime           0;
 
-stopAt              endTime;//writeNow;//  
+stopAt              endTime;
 
 endTime             250;
 
@@ -33,9 +34,10 @@ adjustTimeStep      false; // adjust time step based on CFL condition, max power
 
 maxDeltaT           1.0; // max time step
 
-writeControl        runTime;//timeStep;//runTime;//adjustableRunTime;
+writeControl        runTime;
+// writeControl        adjustableRunTime;
 
-writeInterval       5;
+writeInterval       10;
 
 purgeWrite          2;
 

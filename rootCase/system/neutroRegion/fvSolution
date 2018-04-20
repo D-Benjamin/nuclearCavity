@@ -18,9 +18,7 @@ FoamFile
 solvers
 {
     "flux.*"
-    { 
-      
-
+    {
         solver          PCG;
         preconditioner  FDIC;
         tolerance       1e-6;
@@ -42,8 +40,9 @@ neutronTransport
     implicitPredictor           false;
     ROMAcceleration             false;
     aitkenAcceleration          false;
+
     neutronIterationResidual    0.000001; // required accuracy for the coupling of different energy groups
-    maxNeutronIterations        50; // up to 3-400 if no acceleration techniques 
+    maxNeutronIterations        50; // up to 3-400 if no acceleration techniques
 }
 
 
