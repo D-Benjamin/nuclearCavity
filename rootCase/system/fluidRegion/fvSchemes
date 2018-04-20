@@ -75,7 +75,7 @@ snGradSchemes
 
 fluxRequired
 {
-    default         no;
+    default false;
     p_rgh;
 }
 
