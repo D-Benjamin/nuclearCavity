@@ -46,5 +46,6 @@ zones
         lambda nonuniform List<scalar> 8 ( 1.246670e-02 2.829170e-02 4.252440e-02 1.330420e-01 2.924670e-01 6.664880e-01 1.634780e+00 3.554600e+00 );
         discFactor nonuniform List<scalar> 6 ( 1 1 1 1 1 1 );
         integralFlux nonuniform List<scalar> 6 ( 1.000000e+00 1.000000e+00 1.000000e+00 1.000000e+00 1.000000e+00 1.000000e+00 );
+        ScNo 2e8;
     }
 );
