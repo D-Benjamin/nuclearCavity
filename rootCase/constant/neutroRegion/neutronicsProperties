@@ -29,4 +29,6 @@ useGivenDiscFactors     false;
 
 // doNotParametrize        ();
 
+samofar                 true; // MSR-specific XS variation
+
 // ************************************************************************* //
