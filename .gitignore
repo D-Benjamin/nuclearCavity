@@ -1,6 +1,21 @@
-
+# System files
 Thumbs.db
 .DS_store
 .directory
 
+# Case folders
 [0-9]\.[0-9]/
+
+# Python files
+*.pyc
+
+# LaTeX files
+*.aux
+*.bbl
+*.blg
+*.fdb*
+*.fls
+*.log
+*.out
+*.synctex*
+*.nl*
