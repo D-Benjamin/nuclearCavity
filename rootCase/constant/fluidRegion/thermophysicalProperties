@@ -21,7 +21,7 @@ thermoType
     mixture         pureMixture;
     transport       const;
     thermo          hConst;
-    equationOfState rhoConst;
+    equationOfState Boussinesq;
     specie          specie;
     energy          sensibleEnthalpy;
 }
@@ -35,7 +35,9 @@ mixture
     }
     equationOfState
     {
-        rho     2000;       // density: kg/m3
+        rho0    2000;       // density: kg/m3
+        T0      900;
+        beta    2e-04;
     }
     thermodynamics
     {
