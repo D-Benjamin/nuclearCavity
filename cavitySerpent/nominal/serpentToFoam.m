@@ -9,14 +9,14 @@
 % the GeN-Foam input autonomously.
 %
 % Author: Rodrigo Gonzalez Gonzaga de Oliveira, M.Sc., Nuclear Energy
-% Paul Scherrer Institut, Laboratory for Reactor Physics and Systems Behaviour (LRS)
+% Paul Scherrer Institut, Laboratory for Advanced Nuclear Systems (ANS)
 % email address: rodrigo.de-oliveira@psi.ch
 %                rodrigoggoliveira@gmail.com
 %
 % Based on the original serpentToFoam by Carlo Fiorina
 %
 % Website: to be added after repo opens               <------
-% June 2017; Last revision: 03-February-2018
+% June 2017; Last revision: 10-July-2018
 
 %------------- BEGIN CODE --------------
 
@@ -73,19 +73,19 @@ nd = length (FWD_ANA_BETA_ZERO)/2 -1; %number of delayed neutron precursors
 % Name XS dictionary
 switch (coreState)
     case 'N'
-        foamDict = 'nuclearData';
-    case 'R'
-     	foamDict = 'nuclearDataRadialExp';
-    case 'A'
-        foamDict = 'nuclearDataAxialExp';
-    case 'T'
-        foamDict = 'nuclearDataFuelTemp';
+        foamDict = 'nominal';
     case 'C'
-        foamDict = 'nuclearDataRhoCool';
-    case 'CL'
-        foamDict = 'nuclearDataCladExp';
+        foamDict = 'rhoCool';
     case 'CT'
-        foamDict = 'nuclearDataTCool';
+        foamDict = 'TCool';
+    case 'T'
+        foamDict = 'TFuel';
+    case 'CL'
+        foamDict = 'expClad';
+    case 'A'
+        foamDict = 'expAxial';
+    case 'R'
+        foamDict = 'expRadial';
     otherwise
         error('Unrecognized core state.');
 end
@@ -112,7 +112,7 @@ fprintf(fid,['\n',...
              '/*\n']);
 
 fprintf(fid,'physical delayed spectrum\n');
-         
+
 if (strcmp(dnprec,'zero'))
     fprintf(fid,'physical delayed neutron fraction\n');
 else
@@ -132,168 +132,161 @@ fprintf(fid,['\n',...
     '    object      %s;\n',...
     '}\n'],foamDict);
 
-fprintf(fid,['\n',...
-    'energyGroups %i ;\n',...
-    'precGroups %i ;\n'],ng,nd);
-
 switch (coreState)
     case 'N'
         fprintf(fid,['\n',...
-            'pTarget %.6e ;\n',...
-        	'keff %.6e ;\n'],...,
-            pTarget,keff);
-    case 'R'
-        fprintf(fid,['\n',...
-            'expansionFromNominal %.6e ;\n',...,);
-        	'radialOrientation %i %i %i ;\n',...);
-        	'axialOrientation %i %i %i ;\n'],...
-            expansionFromNominalR,...
-            radialOrientationX,radialOrientationY,radialOrientationZ,...
-            AxialOrientationX,AxialOrientationY,AxialOrientationZ);
-    case 'A'
-        fprintf(fid,['\n',...
-            'expansionFromNominal %.6e ;\n'],expansionFromNominalA);
-    case 'T'
-        fprintf(fid,['\n',...
-            'TfuelRef %.6e ;\n',...
-            'TfuelPerturbed %.6e ;\n'],...
-            TfuelRef,TfuelPerturbed);
+            'energyGroups %i;\n',...
+            'precGroups %i;\n'],ng,nd);
     case 'C'
         fprintf(fid,['\n',...
-            'rhoCoolRef %.6e ;\n',...
-        	'rhoCoolPerturbed %.6e ;\n'],...
+            'rhoCoolRef %.6e;\n',...
+            'rhoCoolPerturbed %.6e;\n'],...
             rhoCoolRef,rhoCoolPerturbed);
     case 'CT'
         fprintf(fid,['\n',...
-            'TCoolRef %.6e ;\n',...
-        	'TCoolPerturbed %.6e ;\n'],...
+            'TCoolRef %.6e;\n',...
+            'TCoolPerturbed %.6e;\n'],...
             TCoolRef,TCoolPerturbed);
+    case 'T'
+        fprintf(fid,['\n',...
+            'TfuelRef %.6e;\n',...
+            'TfuelPerturbed %.6e;\n'],...
+            TfuelRef,TfuelPerturbed);
     case 'CL'
         fprintf(fid,['\n',...
-            'Tcladref %.6e ;\n',...
-        	'TcladPerturbed %.6e ;\n'],...
+            'Tcladref %.6e;\n',...
+            'TcladPerturbed %.6e;\n'],...
             Tcladref,TcladPerturbed);
+    case 'A'
+        fprintf(fid,['\n',...
+            'expansionFromNominal %.6e;\n'],expansionFromNominalA);
+    case 'R'
+        fprintf(fid,['\n',...
+            'expansionFromNominal %.6e;\n',...,);
+            'radialOrientation %i %i %i;\n',...);
+            'axialOrientation %i %i %i;\n'],...
+            expansionFromNominalR,...
+            radialOrientationX,radialOrientationY,radialOrientationZ,...
+            AxialOrientationX,AxialOrientationY,AxialOrientationZ);
 end
 
 %% Create zones
 fprintf(fid,['\n',...
     'zones\n',...
-    '(\n']);
+    '{\n']);
 
 universeToZoneSize = (size(universeToZone));
 
 %Loop over Universes we want to extract
 for k=1:universeToZoneSize(1,1)
-	
+
     %initialize search variables
     universeFound = false;
-    
+
     universeToFind_universeName = universeToZone{k, 1};
     universeToFind_zoneName = universeToZone{k, 2};
-    universeToFind_fuelFraction = universeToZone{k, 3};
-    
+
     % Find the Universe number we want to extract inside Serpent output (GC_UNIVERSE_NAME)
     for i = 1:size(GC_UNIVERSE_NAME,1)
         if(strcmp(universeToFind_universeName,strcat(GC_UNIVERSE_NAME(i,:))))
-			idx=i;
-			universeFound = true;
+            idx=i;
+            universeFound = true;
         end
     end
-        
-	if (universeFound)
-		
-		fprintf(fid,[
+
+    if (universeFound)
+
+        fprintf(fid,[
         '    %s\n',...
         '    {\n'],universeToFind_zoneName);
 
-		if (strcmp('N',coreState))
-			fprintf(fid,'        fuelFraction %.6e ;\n',universeToFind_fuelFraction);
-		end
-
-		% Inverse neutron speed (aka inverse velocity 1/V)
-        IV = INF_INVV(idx,1:2:end) / cm2m;
-		fprintf(fid,'        IV nonuniform List<scalar> %i (%s );\n',...
+        if (strcmp('N',coreState))
+            % Inverse neutron speed (aka inverse velocity 1/V)
+            IV = INF_INVV(idx,1:2:end) / cm2m;
+            fprintf(fid,'        IV nonuniform List<scalar> %i (%s );\n',...
             ng,sprintf(' %.6e',IV));
-        
-		% Diffusion coefficient
+
+            % Prompt neutron spectrum
+            XP = INF_CHIP(idx,1:2:end);
+            fprintf(fid,'        chiPrompt nonuniform List<scalar> %i (%s );\n',...
+                ng,sprintf(' %.6e',XP));
+
+            % Delayed neutron spectrum
+            XD = INF_CHID(idx,1:2:end);
+            % XD = XP;
+            fprintf(fid,'        chiDelayed nonuniform List<scalar> %i (%s );\n',...
+                ng,sprintf(' %.6e',XD));
+
+            % Delayed neutron precursors fraction (Beta)
+            if (strcmp(dnprec,'zero'))
+                beta = FWD_ANA_BETA_ZERO(idx,3:2:end);
+            else
+                beta = ADJ_IFP_ANA_BETA_EFF(idx,3:2:end);
+            end
+
+            fprintf(fid,'        beta nonuniform List<scalar> %i (%s );\n',...
+                nd,sprintf(' %.6e',beta));
+
+            % Lambda (Delayed neutron precursors decay constants)
+            if (strcmp(dnprec,'zero'))
+                LAM = FWD_ANA_LAMBDA(idx,3:2:end);
+            else
+                LAM = ADJ_IFP_ANA_LAMBDA(idx,3:2:end);
+            end
+
+            fprintf(fid,'        lambda nonuniform List<scalar> %i (%s );\n',...
+                nd,sprintf(' %.6e',LAM));
+
+            % Discontinuity factors (needs further development)
+            fprintf(fid,'        discFactor nonuniform List<scalar> %i (',ng);
+            for i = 1:ng
+                    fprintf(fid,' 1');
+            end
+            fprintf(fid,' );\n');
+
+            % Integral fluxes (needs further development)
+            integralFlux = INF_FLX(idx,1:2:end) ./ INF_FLX(1,1:2:end);
+            fprintf(fid,'        integralFlux nonuniform List<scalar> %i (%s );\n',...
+                ng,sprintf(' %.6e',integralFlux));
+        end
+
+        % Diffusion coefficient
         D = INF_DIFFCOEF(idx,1:2:end) * cm2m;
         fprintf(fid,'        D nonuniform List<scalar> %i (%s );\n',...
             ng,sprintf(' %.6e',D));
 
-		% nuSigmaEff
+        % kappaFission
+        kappaFission = ( INF_FISS(idx,1:2:end) .* INF_KAPPA(idx,1:2:end) ) / cm2m*mev2j;
+        fprintf(fid,'        kappaFission nonuniform List<scalar> %i (%s );\n',...
+            ng,sprintf(' %.6e',kappaFission));
+
+        % nuSigmaF
         NSF = INF_NSF(idx,1:2:end) / cm2m;
-		fprintf(fid,'        nuSigmaEff nonuniform List<scalar> %i (%s );\n',...
+        fprintf(fid,'        nuSigmaF nonuniform List<scalar> %i (%s );\n',...
             ng,sprintf(' %.6e',NSF));
 
-		% sigmaPow
-        sigmaPow = ( INF_FISS(idx,1:2:end) .* INF_KAPPA(idx,1:2:end) ) / cm2m*mev2j;
-		fprintf(fid,'        sigmaPow nonuniform List<scalar> %i (%s );\n',...
-            ng,sprintf(' %.6e',sigmaPow));
-
-		% Scattering matrix
+        % Sigma removal (abs+ capture + group transfer below)  obs:
+        % actually total - diagonals of scattering production
         SP = INF_SP0(idx,1:2:end);
+        
+        REMXS = ( INF_TOT(idx,1:2:end) - SP(1:ng+1:end) ) / cm2m;
+        fprintf(fid,'        sigmaRem nonuniform List<scalar> %i (%s );\n',...
+            ng,sprintf(' %.6e',REMXS));
+
+        % Scattering matrix
         SM = sprintf(['        (' repmat(' %.6e', 1, ng) ' )\n'], SP / cm2m);
-		fprintf(fid,'        scatteringMatrix  %i  %i (\n%s        );\n',...
+        fprintf(fid,'        scatteringMatrix  %i  %i (\n%s        );\n',...
             ng,ng,SM);
-        
-		% Sigma disappearence (abs+ capture + group transfer below)  obs:
-		% actually total - diagonals of scattering production
-		DISAPP = ( INF_TOT(idx,1:2:end) - SP(1:ng+1:end) ) / cm2m;
-        fprintf(fid,'        sigmaDisapp nonuniform List<scalar> %i (%s );\n',...
-            ng,sprintf(' %.6e',DISAPP));
 
-		% Prompt neutron spectrum
-		XP = INF_CHIP(idx,1:2:end);
-        fprintf(fid,'        chiPrompt nonuniform List<scalar> %i (%s );\n',...
-            ng,sprintf(' %.6e',XP));
-        
-        % Delayed neutron spectrum
-        XD = INF_CHID(idx,1:2:end);
-        % XD = XP;
-        fprintf(fid,'        chiDelayed nonuniform List<scalar> %i (%s );\n',...
-            ng,sprintf(' %.6e',XD));
-        
-		% Delayed neutron precursors fraction (Beta)
-        if (strcmp(dnprec,'zero'))
-            beta = FWD_ANA_BETA_ZERO(idx,3:2:end);
-        else
-            beta = ADJ_IFP_ANA_BETA_EFF(idx,3:2:end);
-        end
-        
-        fprintf(fid,'        Beta nonuniform List<scalar> %i (%s );\n',...
-            nd,sprintf(' %.6e',beta));
+        fprintf(fid,'    }\n');
 
-		% Lambda (Delayed neutron precursors decay constants)
-        if (strcmp(dnprec,'zero'))
-            LAM = FWD_ANA_LAMBDA(idx,3:2:end);
-        else
-            LAM = ADJ_IFP_ANA_LAMBDA(idx,3:2:end);
-        end
-        
-        fprintf(fid,'        lambda nonuniform List<scalar> %i (%s );\n',...
-            nd,sprintf(' %.6e',LAM));
-
-		% Discontinuity factors (needs further development)
-		fprintf(fid,'        discFactor nonuniform List<scalar> %i (',ng);
-		for i = 1:ng
-				fprintf(fid,' 1');
-		end
-		fprintf(fid,' );\n');
-
-		% Integral fluxes (needs further development)
-        integralFlux = INF_FLX(idx,1:2:end) ./ INF_FLX(1,1:2:end);
-        fprintf(fid,'        integralFlux nonuniform List<scalar> %i (%s );\n',...
-            ng,sprintf(' %.6e',integralFlux));
-        
-		fprintf(fid,'    }\n');
-    
     else
         error('Universe %s not found in Serpent universes.',universeToFind_universeName);
-	
-	end
+
+    end
 end
 
-fprintf(fid,');\n');
+fprintf(fid,'}\n');
 
 fprintf(['\n',...
     'Saving file %s\n'],foamDict);
@@ -334,7 +327,7 @@ while true
 end
 
 %% Selects physical or effective delayed neutron fraction and spectrum
- 
+
 fprintf(['\n',...
     'Treatment of delayed neutron: (2 options)\n',...
     'zero: Use the physical fractions and the delayed neutron spectrum.\n',...
@@ -347,26 +340,42 @@ while true
         fprintf('\nInvalid treatment type! Please try again.\n');
     end
 end
- 
+
 %% Finds the core state for the answer script
- 
+
 fprintf(['\n',...
     'What core state would you like the XS dictionary to be prepared for? (7 options)\n'...
     'N: Nominal core state\n'...
-    'R: Radially expanded core\n'...
-    'A: Axially expanded core\n'...
-    'T: Doppler broadened core\n'...
     'C: Expanded coolant\n'...
     'CT: Coolant temperature\n'...
-    'CL: Expanded cladding\n']);
+    'T: Doppler broadened core\n'...
+    'CL: Expanded cladding\n'...
+    'A: Axially expanded core\n'...
+    'R: Radially expanded core\n']);
 while true
     coreState = input('Core state: ', 's');
     switch(coreState)
         case 'N'
-            pTarget = getNumber('Target power (in Watts) for eigenvalue calculations: ',...
-                'Not a valid number! Re-enter the target power (in Watts): ');
-            keff = getNumber('keff: ',...
-                'Not a valid number! Re-enter keff: ');
+            break
+        case 'C'
+            rhoCoolRef = getNumber('rhoCoolRef: ','Not a valid number! Re-enter rhoCoolRef: ');
+            rhoCoolPerturbed = getNumber('rhoCoolPerturbed: ','Not a valid number! Re-enter rhoCoolPerturbed: ');
+            break
+        case 'CT'
+            TCoolRef = getNumber('TCoolRef: ','Not a valid number! Re-enter TCoolRef: ');
+            TCoolPerturbed = getNumber('TCoolPerturbed: ','Not a valid number! Re-enter TCoolPerturbed: ');
+            break
+        case 'T'
+            TfuelRef = getNumber('TfuelRef: ','Not a valid number! Re-enter TfuelRef: ');
+            TfuelPerturbed = getNumber('TfuelPerturbed: ','Not a valid number! Re-enter TfuelPerturbed: ');
+            break
+        case 'CL'
+            Tcladref = getNumber('Tcladref: ','Not a valid number! Re-enter Tcladref: ');
+            TcladPerturbed = getNumber('TcladPerturbed: ','Not a valid number! Re-enter TcladPerturbed: ');
+            break
+        case 'A'
+            expansionFromNominalA = getNumber('Relative axial expansion compared to nominal: ',...
+                'Not a valid number! Re-enter relative axial expansion: ');
             break
         case 'R'
             expansionFromNominalR = getNumber('Relative radial expansion compared to nominal: ',...
@@ -384,29 +393,9 @@ while true
             AxialOrientationZ = getNumber('Orientation of Axial direction, z component: ',...
                 'Not a valid number! Re-enter orientation of axial direction: ');
             break
-        case 'A'
-            expansionFromNominalA = getNumber('Relative axial expansion compared to nominal: ',...
-                'Not a valid number! Re-enter relative axial expansion: ');
-            break
-        case 'T'
-            TfuelRef = getNumber('TfuelRef: ','Not a valid number! Re-enter TfuelRef: ');
-            TfuelPerturbed = getNumber('TfuelPerturbed: ','Not a valid number! Re-enter TfuelPerturbed: ');
-            break
-        case 'C'
-            rhoCoolRef = getNumber('rhoCoolRef: ','Not a valid number! Re-enter rhoCoolRef: ');
-            rhoCoolPerturbed = getNumber('rhoCoolPerturbed: ','Not a valid number! Re-enter rhoCoolPerturbed: ');
-            break
-        case 'CT'
-            TCoolRef = getNumber('TCoolRef: ','Not a valid number! Re-enter TCoolRef: ');
-            TCoolPerturbed = getNumber('TCoolPerturbed: ','Not a valid number! Re-enter TCoolPerturbed: ');
-            break
-        case 'CL'
-            Tcladref = getNumber('Tcladref: ','Not a valid number! Re-enter Tcladref: ');
-            TcladPerturbed = getNumber('TcladPerturbed: ','Not a valid number! Re-enter TcladPerturbed: ');
-            break
         otherwise
             fprintf('Invalid core state! Please try again.\n');
-    end  
+    end
 end
 
 %% Translate Serpent universes to GeN-Foam zones
@@ -418,13 +407,13 @@ fprintf(['\n',...
 universesAdded = 0;
 while true
     universeFound = false;
-    
+
     % Display information about what can be added and what was already
     fprintf(['\n',...
         'Valid universes to extract are:\n',...
         '\n',...
         '%s\n'],strjoin(serpentUniverses,'\n'));
-    
+
     if universesAdded
        fprintf(['\n',...
            'The currently added universes are:\n',...
@@ -432,11 +421,11 @@ while true
        display(cell2table(universeToZone,...
            'VariableNames',{'universe' 'zone' 'fuelFraction'}));
     end
-    
+
     fprintf('\nEnter a universe to extract or "done" to finish\n')
-    
+
     universeToExtract = input('universe or done: ','s');
-    
+
     % check if extraction is done to break the loop or continue extraction
     if strcmp(universeToExtract,'done')
         break
@@ -450,11 +439,11 @@ while true
                 universesAdded = universesAdded+1;
 
                 zoneName = input('Enter a zone name: ','s');
-                
+
                 fuelFraction = getNumber(...
                     'Enter the fuel fraction in this zone: ',...
                     'Fuel fraction must be a number!\nRe-enter fuel fraction in this zone: ');
-                
+
                 % stores the universe - zone - fuelFraction
                 universeToZone(universesAdded,(1:3)) = {universeToExtract, zoneName, fuelFraction};
             end
@@ -478,15 +467,39 @@ fprintf(answersScript,[...
     serpentCase,...
     dnprec,...
     coreState);
-    
+
 
 switch(coreState)
     case 'N'
+
+    case 'C'
         fprintf(answersScript,[...
-            'pTarget = %.6e;\n',...
-            'keff = %.6e;\n'],...
-            pTarget,...
-            keff);
+            'rhoCoolRef = %.6e;\n',...
+            'rhoCoolPerturbed = %.6e;\n'],...
+            rhoCoolRef,...
+            rhoCoolPerturbed);
+    case 'CT'
+        fprintf(answersScript,[...
+            'TCoolRef = %.6e;\n',...
+            'TCoolPerturbed = %.6e;\n'],...
+            TCoolRef,...
+            TCoolPerturbed);
+    case 'T'
+        fprintf(answersScript,[...
+            'TfuelRef = %.6e;\n',...
+            'TfuelPerturbed = %.6e;\n'],...
+            TfuelRef,...
+            TfuelPerturbed);
+    case 'CL'
+        fprintf(answersScript,[...
+            'Tcladref = %.6e;\n',...
+            'TcladPerturbed = %.6e;\n'],...
+            Tcladref,...
+            TcladPerturbed);
+    case 'A'
+        fprintf(answersScript,[...
+            'expansionFromNominalA = %.6e;\n'],...
+            expansionFromNominalA);
     case 'R'
         fprintf(answersScript,[...
             'expansionFromNominalR = %.6e;\n',...
@@ -503,34 +516,6 @@ switch(coreState)
             AxialOrientationX,...
             AxialOrientationY,...
             AxialOrientationZ);
-    case 'A'
-        fprintf(answersScript,[...
-            'expansionFromNominalA = %.6e;\n'],...
-            expansionFromNominalA);
-    case 'T'
-        fprintf(answersScript,[...
-            'TfuelRef = %.6e;\n',...
-            'TfuelPerturbed = %.6e;\n'],...
-            TfuelRef,...
-            TfuelPerturbed);
-    case 'C'
-        fprintf(answersScript,[...
-            'rhoCoolRef = %.6e;\n',...
-            'rhoCoolPerturbed = %.6e;\n'],...
-            rhoCoolRef,...
-            rhoCoolPerturbed);
-    case 'CT'
-        fprintf(answersScript,[...
-            'TCoolRef = %.6e;\n',...
-            'TCoolPerturbed = %.6e;\n'],...
-            TCoolRef,...
-            TCoolPerturbed);
-    case 'CL'
-        fprintf(answersScript,[...
-            'Tcladref = %.6e;\n',...
-            'TcladPerturbed = %.6e;\n'],...
-            Tcladref,...
-            TcladPerturbed);
 end
 
 fprintf(answersScript,['\n',...

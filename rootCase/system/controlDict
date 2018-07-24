@@ -15,9 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// General
-
-application         GeN-Foam;
+application         genFoam;
 
 startFrom           startTime;
 // startFrom           latestTime;
@@ -64,14 +62,6 @@ solveEnergy             false;
 solveNeutronics         false;
 
 solveThermalMechanics   false;
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-// Global simulation options
-
-compr       false; // true for compressible simulation
-
-liquidFuel  true;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
