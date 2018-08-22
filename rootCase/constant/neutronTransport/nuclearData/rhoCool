@@ -14,8 +14,7 @@ FoamFile
 // delayed neutron spectrum: physical
 // delayed neutron fraction: effective
 
-rhoCoolRef 2.000000e+03;
-rhoCoolPerturbed 1.900000e+03;
+rhoCoolPerturbed    1900;
 
 zones
 {

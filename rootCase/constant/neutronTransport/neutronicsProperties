@@ -19,7 +19,7 @@ SP3Neutronics           false;
 
 eigenvalueNeutronics    true;
 
-circulatingFuel         true;
+advectingFuel           true;
 
 fastNeutrons            true;
 

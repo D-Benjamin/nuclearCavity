@@ -20,7 +20,7 @@ FoamFile
 planeStress         false;
 linkedFuel          false; // true if there is contact between fuel and cladding (expansion driven by cladding)
 fuelOrientation     (0 0 1);
-TrefStructure       900; //ref temperature for structures
+TStructuresRef      900; //ref temperature for structures
 
 zones
 {
