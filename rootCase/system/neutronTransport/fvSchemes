@@ -31,33 +31,14 @@ gradSchemes
 divSchemes
 {
     default none;
-    div(phiNeutro,prec0)    Gauss upwind;
-    div(phiNeutro,prec1)    Gauss upwind;
-    div(phiNeutro,prec2)    Gauss upwind;
-    div(phiNeutro,prec3)    Gauss upwind;
-    div(phiNeutro,prec4)    Gauss upwind;
-    div(phiNeutro,prec5)    Gauss upwind;
-    div(phiNeutro,prec6)    Gauss upwind;
-    div(phiNeutro,prec7)    Gauss upwind;
+    div(phiNeutro,precursor)     Gauss upwind;
 }
 
 laplacianSchemes
 {
     default none;
-    laplacian((D0|discFactor0),fluxStar0)   Gauss linear uncorrected;
-    laplacian((D1|discFactor1),fluxStar1)   Gauss linear uncorrected;
-    laplacian((D2|discFactor2),fluxStar2)   Gauss linear uncorrected;
-    laplacian((D3|discFactor3),fluxStar3)   Gauss linear uncorrected;
-    laplacian((D4|discFactor4),fluxStar4)   Gauss linear uncorrected;
-    laplacian((D5|discFactor5),fluxStar5)   Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec0)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec1)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec2)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec3)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec4)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec5)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec6)        Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,prec7)        Gauss linear uncorrected;
+    laplacian((D|discFactor),discFlux)      Gauss linear uncorrected;
+    laplacian(diffCoeffNeutro,precursor)    Gauss linear uncorrected;
 }
 
 interpolationSchemes
