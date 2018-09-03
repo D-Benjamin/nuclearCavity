@@ -37,18 +37,18 @@ divSchemes
 laplacianSchemes
 {
     default none;
-    laplacian((D|discFactor),discFlux)      Gauss linear uncorrected;
-    laplacian(diffCoeffNeutro,precursor)    Gauss linear uncorrected;
+    laplacian((D|discFactor),discFlux)      Gauss linear orthogonal;
+    laplacian(diffCoeffNeutro,precursor)    Gauss linear orthogonal;
 }
 
 interpolationSchemes
 {
-    default none;//linear;
+    default none;
 }
 
 snGradSchemes
 {
-    default none;//uncorrected;
+    default none;
 }
 
 fluxRequired

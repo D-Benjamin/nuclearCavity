@@ -29,7 +29,7 @@ gradSchemes
 {
     default         leastSquares;
     grad(Disp)      leastSquares;
-    grad(Tmech)     leastSquares;
+    grad(TMech)     leastSquares;
 }
 
 divSchemes
@@ -43,8 +43,8 @@ divSchemes
 laplacianSchemes
 {
     default         none;
-    laplacian(DD,D) Gauss linear corrected;
-    laplacian(DT,T) Gauss linear corrected;
+    laplacian(DD,D) Gauss linear orthogonal;
+    laplacian(DT,T) Gauss linear orthogonal;
 }
 
 interpolationSchemes
@@ -61,7 +61,7 @@ fluxRequired
 {
     default         false;
     Disp            false;
-    Tmech           false;
+    TMech           false;
 }
 
 
