@@ -19,8 +19,6 @@ SP3Neutronics           false;
 
 eigenvalueNeutronics    true;
 
-advectingFuel           true;
-
 fastNeutrons            true;
 
 adjustDiscFactors       false;
@@ -30,5 +28,7 @@ adjustDiscFactors       false;
 useGivenDiscFactors     false;
 
 // doNotParametrize        ();
+
+// advectingFuelOverride   true;
 
 // ************************************************************************* //

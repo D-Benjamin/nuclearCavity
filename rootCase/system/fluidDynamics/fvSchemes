@@ -54,6 +54,7 @@ laplacianSchemes
     laplacian(DREff,R)              Gauss linear orthogonal;
     laplacian((rho*nuEff),U)        Gauss linear orthogonal;
     laplacian(thermo:alpha,h)       Gauss linear orthogonal;
+    laplacian(alphahe,h)            Gauss linear orthogonal;
 }
 
 interpolationSchemes
@@ -61,6 +62,7 @@ interpolationSchemes
     default none;
     interpolate(porosity)               linear;
     interpolate(((porosity*rho)*rAU))   linear;
+    interpolate(((porousMediumModel<porosity*rho)*rAU)) linear;
     dotInterpolate(S,(rho_0*U_0))       linear;
     interpolate((rho*HbyA))             linear;
     interpolate(rho_0)                  linear;
