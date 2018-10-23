@@ -10,14 +10,50 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      regionProperties;
+    location    "system";
+    object      fvSchemes;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+ddtSchemes
+{
+    default Euler;
+}
+
+gradSchemes
+{
+    default none;
+    grad((XS::disp&(1,0,0)))    Gauss linear;
+    grad((XS::disp&(0,1,0)))    Gauss linear;
+    grad((XS::disp&(0,0,1)))    Gauss linear;
+}
+
+divSchemes
+{
+    default none;
+    div(phiNeutro,precursor)     Gauss upwind;
+}
+
+laplacianSchemes
+{
+    default none;
+    laplacian((D|discFactor),discFlux)      Gauss linear orthogonal;
+    laplacian(diffCoeffNeutro,precursor)    Gauss linear orthogonal;
+}
+
+interpolationSchemes
+{
+    default none;
+}
+
+snGradSchemes
+{
+    default none;
+}
+
+fluxRequired
+{
+    default false;
+}
 
 // ************************************************************************* //

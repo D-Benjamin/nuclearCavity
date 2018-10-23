@@ -11,13 +11,12 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      regionProperties;
+    object      reactorState;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+keff                    1.0;
+
+normalizationPower      1.0e+09;
 
 // ************************************************************************* //

@@ -1,23 +1,26 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  5                                     |
+|  \\    /   O peration     | Version:  5.x                                   |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
-    version     2.0;
-    format      ascii;
-    class       dictionary;
-    location    "constant";
-    object      regionProperties;
+    version         2;
+    format          ascii;
+    class           dictionary;
+    location        "constant";
+    object          neutronicsProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+crossSectionsModel      diffusionTwoPoints;
+
+spatialKineticsModel    diffusion;
+
+fissionProductsModel    advectingSimple;
+
+transient               false;
 
 // ************************************************************************* //

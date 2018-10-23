@@ -4,12 +4,12 @@ cd ${0%/*} || exit 1    # Run from this directory
 # Source tutorial run functions
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
-# Meshes
-fluidDynamics="fluidDynamics"
-neutronTransport="neutronTransport"
-thermalMechanics="thermalMechanics"
+# Regions
+regions="cavity"
 
-cases="0.1 0.2 0.3 1.1 1.3 1.5"
+neutronTransport="neutronTransport"
+
+cases="0.1" # 0.2 0.3 1.1 1.3 1.5"
 
 runMapFields()
 {
@@ -17,11 +17,11 @@ runMapFields()
     mapFields $2 -case $1 -sourceRegion $3 -targetRegion $3 -sourceTime latestTime -consistent > $1/log.mapFields.$3 2>&1
     case "$2" in
     $fluidRef )
-        cp $2/200/$fluidDynamics/phi* $1/200/$fluidDynamics/      # workaround for phi, which is not mapped by mapFields
+        cp $2/200/$regions/phi* $1/200/$regions/      # workaround for phi, which is not mapped by mapFields
         ;;
     $neutroRef )
         # cp $2/150/$neutronTransport/reactorState* $1/200/$neutronTransport/ # workaround for reactorState, which is not mapped by mapFields
-        cp $2/150/$fluidDynamics/volFuelPower* $1/200/$fluidDynamics/ #workaround due to GeN-Foam only mapping from neutronTransport to thermal-hydraulics when solveNeutronics is called
+        cp $2/150/$regions/volFuelPower* $1/200/$regions/ #workaround due to GeN-Foam only mapping from neutronTransport to thermal-hydraulics when solveNeutronics is called
         ;;
     esac
     printf "Fields mapped!\n"
@@ -37,16 +37,17 @@ activateSIMPLE()
 runBlockMesh()
 {
     printf "Running blockMesh in case $1 for all regions..."
-    blockMesh -case $1 -region $fluidDynamics > $1/log.blockMesh.$fluidDynamics 2>&1
-    blockMesh -case $1 -region $neutronTransport > $1/log.blockMesh.$neutronTransport 2>&1
-    blockMesh -case $1 -region $thermalMechanics > $1/log.blockMesh.$thermalMechanics 2>&1
+    blockMesh -case $1 > $1/log.blockMesh 2>&1
+    blockMesh -case $1 -region $regions > $1/log.blockMesh.$regions 2>&1
+    blockMesh -case $1 -region $regions/$neutronTransport > $1/log.blockMesh.$regions.$neutronTransport 2>&1
+
     printf "Mesh created!\n"
 }
 
 activateBuoyancy() # $1 = case folder
 {
     printf "Activating buoyancy (adding gravity acceleration)..."
-    gDict="$1/constant/$fluidDynamics/g"
+    gDict="$1/constant/$regions/g"
     sed -e s/"\(value[ \t]*\) ( 0 0 0 );"/"\1 ( 0 -9.81 0 );"/g $gDict > temp.$$
     mv temp.$$ $gDict
     printf "Buoyancy acitvated!\n"
@@ -55,7 +56,7 @@ activateBuoyancy() # $1 = case folder
 modifyTopWallVelocity() # $1 = case folder, $2 = new velocity
 {
     printf "Modifying top wall velovity of case $1 to $2 m/s..."
-    UDict="$1/0/$fluidDynamics/U"
+    UDict="$1/0/$regions/U"
     sed s/"0.5 0 0"/"$2 0 0"/g $UDict > temp.$$
     mv temp.$$ $UDict
     printf "Top wall velocity modified!\n"
@@ -108,7 +109,7 @@ setEnergyCase() # case 0.3
     $controlDict > temp.$$
     mv temp.$$ $controlDict
 
-    runMapFields $caseName $fluidRef $fluidDynamics
+    runMapFields $caseName $fluidRef $regions
     runMapFields $caseName $neutroRef $neutronTransport
     runMapFields $caseName $fluidRef $thermalMechanics
     printf "Case set!\n\n"
@@ -135,7 +136,7 @@ setCirculatingFuelCase()
     $controlDict > temp.$$
     mv temp.$$ $controlDict
 
-    runMapFields $caseName $fluidRef $fluidDynamics
+    runMapFields $caseName $fluidRef $regions
     runMapFields $caseName $neutroRef $neutronTransport
     runMapFields $caseName $fluidRef $thermalMechanics
     printf "Case set!\n\n"
@@ -160,7 +161,7 @@ setPowerCouplingCase()
     $controlDict > temp.$$
     mv temp.$$ $controlDict
 
-    runMapFields $caseName $fluidRef $fluidDynamics
+    runMapFields $caseName $fluidRef $regions
     runMapFields $caseName $neutroRef $neutronTransport
     runMapFields $caseName $fluidRef $thermalMechanics
     printf "Case set!\n\n"
