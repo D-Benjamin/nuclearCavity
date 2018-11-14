@@ -23,10 +23,9 @@ compr   false; // true for compressible simulation
 beta    [0 0 0 -1 0 0 0]    2e-04;
 
 // Reference temperature
-T0      [0 0 0 1 0 0 0]     900;
+TRef    [0 0 0 1 0 0 0]     900;
 
 // Reference density
-rho0    [1 -3 0 0 0 0 0]    2000;
+rhoRef  [1 -3 0 0 0 0 0]    2000;
 
 // ************************************************************************* //
-

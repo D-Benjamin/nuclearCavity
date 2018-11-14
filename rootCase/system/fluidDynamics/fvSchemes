@@ -35,24 +35,14 @@ divSchemes
     div(phi,U)          Gauss upwind;
     div(phi,K)          Gauss linear;
     div(phi,h)          Gauss upwind;
-    div(phi,k)          Gauss upwind;
-    div(phi,epsilon)    Gauss upwind;
-    div(phi,R)          Gauss upwind;
-    div(R)              Gauss linear;
-    div((muEff*dev2(T(grad(U)))))       Gauss linear;
     div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
 }
 
 laplacianSchemes
 {
     default none;
-    laplacian(muEff,U)              Gauss linear orthogonal;
-    laplacian(rhorAUf,p_rgh)        Gauss linear orthogonal;
-    laplacian(alphaEff,h)           Gauss linear orthogonal;
-    laplacian(DkEff,k)              Gauss linear orthogonal;
-    laplacian(DepsilonEff,epsilon)  Gauss linear orthogonal;
-    laplacian(DREff,R)              Gauss linear orthogonal;
     laplacian((rho*nuEff),U)        Gauss linear orthogonal;
+    laplacian(rhorAUf,p_rgh)        Gauss linear orthogonal;
     laplacian(thermo:alpha,h)       Gauss linear orthogonal;
     laplacian(alphahe,h)            Gauss linear orthogonal;
 }
@@ -60,13 +50,10 @@ laplacianSchemes
 interpolationSchemes
 {
     default none;
-    interpolate(porosity)               linear;
-    interpolate(((porosity*rho)*rAU))   linear;
-    interpolate(((porousMediumModel<porosity*rho)*rAU)) linear;
-    dotInterpolate(S,(rho_0*U_0))       linear;
-    interpolate((rho*HbyA))             linear;
-    interpolate(rho_0)                  linear;
+    interpolate(((zoneData.fluidFraction*rho)*rAU)) linear;
     flux((rho*HbyA))                    linear;
+    dotInterpolate(S,(rho_0*U_0))       linear;
+    interpolate(rho_0)                  linear;
 }
 
 snGradSchemes

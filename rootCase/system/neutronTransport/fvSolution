@@ -34,7 +34,7 @@ solvers
     }
 }
 
-neutronTransport
+PIMPLE
 {
     integralPredictor           false; // integral neutron balance made at each time step to predict fluxes at next step (can be unstable)
     implicitPredictor           false;

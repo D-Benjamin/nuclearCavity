@@ -20,7 +20,7 @@ FoamFile
 // all cellZones must be included
 // by not defining one of the properties, a default value will be used corresponding to a region of clear fluid
 
-model   byZoneCorrelation;
+model   uniformCorrelation;
 
 zones
 {
@@ -49,15 +49,14 @@ zones
 
 }
 
-//Here below are listed all possible options for a porous region
+// Here below are listed all possible options for a porous region
 // Linear interpolation between fully laminar and fully turbulent
 // Principal axis of the porous region can be rotated compared to the global coordinate system. The rotated local system can be defined by defining the z and x axis. All quantities must be defined according to this coordinate system.
 // The solver will take care of rotating quantities back to the global coordinate system
 
 /*
-    porosity                0.2;    // fraction of the volume occupied by the fluid
+    fluidFraction           0.2;    // fraction of the volume occupied by the fluid
     volumetricAreaSS        0.0;    // wet area diveded by total volume for sub-scale structures (equivalent eg to the area of heat exchange between fluid and sub-scale structure)
-    volumetricAreaFuel      0.0;    // wet area diveded by total volume for fuel (equivalent eg to the area of heat exchange between fluid and fuel)
     hydraulicDiameter       0.0032;                 // characteristic lenght
     localZaxis              (0 0 1);                // z axis for the local coordinate system
     localXaxis              (1 0 0);                // x axis for the local coordinate system
