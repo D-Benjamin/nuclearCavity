@@ -39,13 +39,13 @@ mixture
     }
     thermodynamics
     {
-        Cp      3.075e3;     // specific heat capacity: J/(K.kg) or (kg.m2)/(K.s2.kg)
+        Cp      3.075e3;    // specific heat capacity: J/(K.kg) or (kg.m2)/(K.s2.kg)
         Hf      0;
         Sf      0;
     }
     transport
     {
-        mu      50;          // dynamic viscosity: Pa.s or kg/(m.s)
+        mu      50;         // dynamic viscosity: Pa.s or kg/(m.s)
         Pr      3.075e5;    // Prandtl number: (Cp.mu)/k
     }
 }

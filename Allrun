@@ -21,7 +21,7 @@ runMapFields()
         ;;
     $neutroRef )
         # cp $2/150/$neutronTransport/reactorState* $1/200/$neutronTransport/ # workaround for reactorState, which is not mapped by mapFields
-        cp $2/150/$fluidDynamics/volFuelPower* $1/200/$fluidDynamics/ #workaround due to GeN-Foam only mapping from neutronTransport to thermal-hydraulics when solveNeutronics is called
+        cp $2/150/$fluidDynamics/volPowerFuel* $1/200/$fluidDynamics/ #workaround due to GeN-Foam only mapping from neutronTransport to thermal-hydraulics when solveNeutronics is called
         ;;
     esac
     printf "Fields mapped!\n"
