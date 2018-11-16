@@ -31,14 +31,14 @@ gradSchemes
 divSchemes
 {
     default none;
-    div(phiNeutro,precursor)     Gauss upwind;
+    div(phi,precursor)    Gauss upwind;
 }
 
 laplacianSchemes
 {
     default none;
     laplacian((D|discFactor),discFlux)      Gauss linear orthogonal;
-    laplacian(diffCoeffNeutro,precursor)    Gauss linear orthogonal;
+    laplacian(Dmass,precursor)  Gauss linear orthogonal;
 }
 
 interpolationSchemes
