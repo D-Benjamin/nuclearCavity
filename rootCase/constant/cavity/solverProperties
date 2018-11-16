@@ -16,6 +16,6 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // fluidDynamicsSolver  porousGenFoamNuclear;
-fluidDynamicsSolver  porousGenFoam;
+fluidDynamicsSolver  porousGenFoamNuclear;
 
 // ************************************************************************* //
