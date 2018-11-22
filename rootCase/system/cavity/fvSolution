@@ -77,19 +77,19 @@ PIMPLE
     {
         U
         {
-            tolerance   1e-5;
+            tolerance   1e-4;
             relTol      0;
         }
-        p_rgh
-        {
-            tolerance   5e-4;
-            relTol      0;
-        }
-        h
-        {
-            tolerance   1e-5;
-            relTol      0;
-        }
+        // p_rgh
+        // {
+        //     tolerance   5e-4;
+        //     relTol      0;
+        // }
+        // h
+        // {
+        //     tolerance   1e-5;
+        //     relTol      0;
+        // }
     }
 }
 
