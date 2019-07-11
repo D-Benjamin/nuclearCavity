@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application         genFoam;
+application         multiSolver;
 
 startFrom           startTime;
 // startFrom           latestTime;
@@ -43,7 +43,7 @@ writeFormat         ascii;
 
 writePrecision      7;
 
-writeCompression    true;
+writeCompression    false;
 
 timeFormat          general;
 
@@ -53,23 +53,11 @@ runTimeModifiable   true;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Physics to solve
-
-solveFluidMechanics     true;
-
-solveEnergy             false;
-
-solveNeutronics         false;
-
-solveThermalMechanics   false;
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 // Solution control
 
 maxCo               1; // should be below 1 for CFL condition (necessary to guarantee stability if solving NS)
 
-maxPowerVariation   0.025; //max power variation in each time step
+// maxPowerVariation   0.025; //max power variation in each time step
 
 
 // ************************************************************************* //

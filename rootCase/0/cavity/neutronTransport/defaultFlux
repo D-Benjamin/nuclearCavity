@@ -9,15 +9,12 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "constant";
-    object      regionProperties;
+    class       volScalarField;
+    location    "0/neutroRegion";
+    object      defaultFlux;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
 
 // ************************************************************************* //

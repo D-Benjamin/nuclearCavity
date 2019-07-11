@@ -11,13 +11,10 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      regionProperties;
+    object      porousMediumProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+#include "$FOAM_CASE/constant/solidPorousProperties";
 
 // ************************************************************************* //

@@ -10,17 +10,31 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
     object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+solvers
+{
+    TStructures
+    {
+        solver          PCG;
+        preconditioner  FDIC;
+        tolerance       1e-6;
+        relTol          0.01;
+    }
+
+    TStructuresFinal
+    {
+        $TStructures;
+        tolerance       1e-7;
+        relTol          0;
+    }
+}
+
 PIMPLE
 {
-    nOuterCorrectors        1;
-    tightlyCoupled          false; // if true it iterates on energy, fuel temp, thermal-mechanics and neutronics (not necessary for very short time steps)
-    timeStepResidual        0.00005; // required accuracy for the coupling
-    maxTimeStepIterations   3;
+    nOuterCorrectors    1;
 }
 
 // ************************************************************************* //

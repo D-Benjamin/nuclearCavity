@@ -10,13 +10,14 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
     object      fvSchemes;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 ddtSchemes
 {
+    default none;
+    ddt(solidPorousModel<rhoCp,TStructures)    Euler;
 }
 
 gradSchemes
@@ -29,6 +30,7 @@ divSchemes
 
 laplacianSchemes
 {
+    laplacian(solidPorousModel<kappa,TStructures)   Gauss linear orthogonal;
 }
 
 interpolationSchemes

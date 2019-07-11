@@ -11,13 +11,29 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      regionProperties;
+    object      porousMediumProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+// constants needed to calculate fluid flow in regions treated as porous medium
+// all cellZones must be included
+// by not defining one of the properties, a default value will be used corresponding to a region of clear fluid
+
+model   solidByZoneCorrelation;
+
+zones
+{
+    cavity
+    {
+
+    }
+}
+
+
+/*
+Below are listed all possible options for a porous region
+
+    rhoCp               4.8e6; // rho*cp for the subscale structure
+*/
 
 // ************************************************************************* //

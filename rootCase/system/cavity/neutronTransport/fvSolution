@@ -10,14 +10,46 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "constant";
-    object      regionProperties;
+    location    "system";
+    object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-regions
-(
-    fluid       (cavity)
-);
+solvers
+{
+    discFlux
+    {
+        solver          PCG;
+        preconditioner  FDIC;
+        tolerance       1e-6;
+        relTol          1e-2;
+    }
+
+    precursor
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-6;
+        relTol          1e-2;
+    }
+}
+
+PIMPLE
+{
+    implicitPredictor           false;
+    integralPredictor           false;
+    ROMAcceleration             false;
+    aitkenAcceleration          false;
+
+    outerCorrectorResidualControl
+    {
+        "discFlux.*"
+        {
+            tolerance   1e-2;
+            relTol      0;
+        }
+    }
+}
+
 
 // ************************************************************************* //
