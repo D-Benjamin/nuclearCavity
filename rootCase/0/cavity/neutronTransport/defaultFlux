@@ -15,23 +15,6 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [ 0 -2 -1 0 0 0 0 ];
-
-internalField   uniform 1;
-
-boundaryField
-{
-    ".*Wall.*"
-    {
-        type            albedo;
-        gamma           0.5;
-        value           uniform 1;
-    }
-    frontAndBack
-    {
-        type            empty;
-    }
-}
-
+#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
 
 // ************************************************************************* //

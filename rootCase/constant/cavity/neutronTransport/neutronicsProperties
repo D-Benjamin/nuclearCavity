@@ -15,7 +15,13 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-crossSectionsModel      diffusionTwoPoints;
+// crossSectionsModel      diffusionTwoPoints;
+crossSectionsModel      nDimensional;
+
+branches
+(
+    rhoCool
+);
 
 spatialKineticsModel    diffusion;
 

@@ -32,7 +32,7 @@ gradSchemes
 divSchemes
 {
     default none;
-    div(phi,U)          Gauss upwind;
+    div(phiByGamma,U)   Gauss upwind;
     div(phi,K)          Gauss linear;
     div(phi,h)          Gauss upwind;
     div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
@@ -54,6 +54,8 @@ interpolationSchemes
     dotInterpolate(S,(rho_0*U_0))       linear;
     interpolate(rho_0)                  linear;
     flux((rho*HbyA))                    linear;
+
+    interpolate(zoneData.fluidFraction) linear;
 }
 
 snGradSchemes

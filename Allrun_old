@@ -9,22 +9,19 @@ regions="cavity"
 
 neutronTransport="neutronTransport"
 
-cases="0.1 0.2 0.3 1.1 1.3 1.5" #"0.1 0.2 0.3 1.1 1.3 1.5"
+cases="" #"0.1 0.2 0.3 1.1 1.3 1.5"
 
 runMapFields()
 {
     printf "Running mapFields for $3 from case $2 to $1..."
-    # $regions/$neutronTransport
-    # mapFields $2 -case $1 -sourceRegion $3 -targetRegion $3 -sourceTime latestTime -consistent > $1/log.mapFields.$3 2>&1
+    mapFields $2 -case $1 -sourceRegion $3 -targetRegion $3 -sourceTime latestTime -consistent > $1/log.mapFields.$3 2>&1
     case "$2" in
     $fluidRef )
-        mapFields $2 -case $1 -sourceRegion $3 -targetRegion $3 -sourceTime latestTime -consistent > $1/log.mapFields.$3 2>&1
         cp $2/200/$regions/phi* $1/200/$regions/      # workaround for phi, which is not mapped by mapFields
         ;;
     $neutroRef )
-        mapFields $2 -case $1 -sourceRegion $3 -targetRegion $3 -sourceTime latestTime -consistent > $1/log.mapFields.$regions.$neutronTransport 2>&1
-        cp $2/constant/$regions/$neutronTransport/reactorState* $1/constant/$regions/$neutronTransport/ # workaround for reactorState, which is not mapped by mapFields
-        cp $2/150/$regions/volPowerFuel* $1/200/$regions/ #workaround due to GeN-Foam only mapping from neutronTransport to thermal-hydraulics when solveNeutronics is called
+        # cp $2/150/$neutronTransport/reactorState* $1/200/$neutronTransport/ # workaround for reactorState, which is not mapped by mapFields
+        cp $2/150/$fluidDynamics/volPowerFuel* $1/200/$fluidDynamics/ #workaround due to GeN-Foam only mapping from neutronTransport to thermal-hydraulics when solveNeutronics is called
         ;;
     esac
     printf "Fields mapped!\n"
@@ -68,7 +65,7 @@ modifyTopWallVelocity() # $1 = case folder, $2 = new velocity
 modifyPower() # $1 = case folder, $2 = new power
 {
     printf "Modifying power of case $1 to $2 W..."
-    PDict="$1/constant/$regions/$neutronTransport/reactorState"
+    PDict="$1/constant/$neutronTransport/reactorState"
     sed -e s/"\(pTarget[ \t]*\) 1.0e+09;"/"\1 $2;"/g $PDict > temp.$$
     mv temp.$$ $PDict
     printf "Power modified!\n"
@@ -77,8 +74,8 @@ modifyPower() # $1 = case folder, $2 = new power
 beff_promp()
 {
     printf "Setting Chi Delayed to 0 for all groups"
-    NDict="$1/constant/$regions/$neutronTransport/nuclearData/reference"
-    sed -e s/"\(chiDelayed [ \t]*(\) .*$"/"\1 0 0 0 0 0 0 );"/g $NDict > temp.$$
+    NDict="$1/constant/$neutronTransport/nuclearData/nominal"
+    sed -e s/"\(chiDelayed nonuniform List<scalar> 6 [ \t]*(\) .*$"/"\1 0 0 0 0 0 0 );"/g $NDict > temp.$$
     mv temp.$$ $NDict
     printf "Chi Delayed modified!\n"
 }
@@ -88,16 +85,14 @@ beff_promp()
 setNeutronicsCase() # case 0.2
 {
     printf "Setting case 0.2...\n"
-    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
-    foamDictionary $caseName/system/$regions/fvSolution -entry "PIMPLE.initializeSubSolver" -set "true"
-    foamDictionary $caseName/system/controlDict -entry "endTime" -set "150"
-    foamDictionary $caseName/system/controlDict -entry "deltaT" -set "1.0"
-    # controlDict="$caseName/system/controlDict"
-    # sed \
-    # -e s/"\(endTime[ \t]*\) 200;"/"\1 150;"/g \
-    # -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
-    # $controlDict > temp.$$
-    # mv temp.$$ $controlDict
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(endTime[ \t]*\) 200;"/"\1 150;"/g \
+    -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
 
     printf "Case set!\n\n"
 }
@@ -105,20 +100,18 @@ setNeutronicsCase() # case 0.2
 setEnergyCase() # case 0.3
 {
     printf "Setting case 0.3...\n"
-    foamDictionary $caseName/system/$regions/fvSolution -entry "PIMPLE.frozenFlow" -set "true"
-    foamDictionary $caseName/system/controlDict -entry "startTime" -set "200"
-    foamDictionary $caseName/system/controlDict -entry "endTime" -set "270"
-    # controlDict="$caseName/system/controlDict"
-    # sed \
-    # -e s/"\(startTime[ \t]*\) 0;"/"\1 200;"/g \
-    # -e s/"\(endTime[ \t]*\) 200;"/"\1 270;"/g \
-    # $controlDict > temp.$$
-    # mv temp.$$ $controlDict
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(startTime[ \t]*\) 0;"/"\1 200;"/g \
+    -e s/"\(endTime[ \t]*\) 200;"/"\1 270;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
 
     runMapFields $caseName $fluidRef $regions
-    cp $neutroRef/150/$regions/volPowerFuel* $caseName/200/$regions/
-    # runMapFields $caseName $neutroRef $regions/$neutronTransport
-    # runMapFields $caseName $fluidRef $thermalMechanics
+    runMapFields $caseName $neutroRef $neutronTransport
+    runMapFields $caseName $fluidRef $thermalMechanics
     printf "Case set!\n\n"
 }
 
@@ -133,24 +126,19 @@ setEnergyCase() # case 0.3
 setCirculatingFuelCase()
 {
     printf "Setting case 1.1...\n"
-    foamDictionary $caseName/system/$regions/fvSolution -entry "PIMPLE.initializeSubSolver" -set "true"
-    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
-    foamDictionary $caseName/system/controlDict -entry "startTime" -set "200"
-    foamDictionary $caseName/system/controlDict -entry "endTime" -set "400"
-    foamDictionary $caseName/system/controlDict -entry "deltaT" -set "1.0"
-    # controlDict="$caseName/system/controlDict"
-    # sed \
-    # -e s/"\(startTime[ \t]*\) 0;"/"\1 200;"/g \
-    # -e s/"\(endTime[ \t]*\) 200;"/"\1 270;"/g \
-    # -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
-    # -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
-    # -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    # $controlDict > temp.$$
-    # mv temp.$$ $controlDict
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(startTime[ \t]*\) 0;"/"\1 200;"/g \
+    -e s/"\(endTime[ \t]*\) 200;"/"\1 270;"/g \
+    -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 1.0;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
 
     runMapFields $caseName $fluidRef $regions
-    runMapFields $caseName $neutroRef $regions/$neutronTransport
-    # runMapFields $caseName $fluidRef $thermalMechanics
+    runMapFields $caseName $neutroRef $neutronTransport
+    runMapFields $caseName $fluidRef $thermalMechanics
     printf "Case set!\n\n"
 }
 
@@ -163,23 +151,19 @@ setCirculatingFuelCase()
 setPowerCouplingCase()
 {
     printf "Setting case 1.3...\n"
-    foamDictionary $caseName/system/$regions/fvSolution -entry "PIMPLE.frozenFlow" -set "true"
-    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
-    foamDictionary $caseName/system/controlDict -entry "startTime" -set "200"
-    foamDictionary $caseName/system/controlDict -entry "endTime" -set "270"
-    # controlDict="$caseName/system/controlDict"
-    # sed \
-    # -e s/"\(startTime[ \t]*\) 0;"/"\1 200;"/g \
-    # -e s/"\(endTime[ \t]*\) 200;"/"\1 270;"/g \
-    # -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
-    # -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
-    # -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    # $controlDict > temp.$$
-    # mv temp.$$ $controlDict
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(startTime[ \t]*\) 0;"/"\1 200;"/g \
+    -e s/"\(endTime[ \t]*\) 200;"/"\1 270;"/g \
+    -e s/"\(solveFluidMechanics[ \t]*\) true;"/"\1 false;"/g \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
 
     runMapFields $caseName $fluidRef $regions
-    runMapFields $caseName $neutroRef $regions/$neutronTransport
-    # runMapFields $caseName $fluidRef $thermalMechanics
+    runMapFields $caseName $neutroRef $neutronTransport
+    runMapFields $caseName $fluidRef $thermalMechanics
     printf "Case set!\n\n"
 }
 
@@ -190,17 +174,14 @@ setPowerCouplingCase()
 setBuoyancyCase()
 {
     printf "Setting case 1.5...\n"
-    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
-    foamDictionary $caseName/system/controlDict -entry "endTime" -set "80"
-    foamDictionary $caseName/system/controlDict -entry "deltaT" -set "0.05"
-    # controlDict="$caseName/system/controlDict"
-    # sed \
-    # -e s/"\(endTime[ \t]*\) 200;"/"\1 80;"/g \
-    # -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 0.05;"/g \
-    # -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
-    # -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    # $controlDict > temp.$$
-    # mv temp.$$ $controlDict
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(endTime[ \t]*\) 200;"/"\1 80;"/g \
+    -e s/"\(deltaT[ \t]*\) 0.01;"/"\1 0.05;"/g \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
 
     activateBuoyancy $caseName
     modifyTopWallVelocity $caseName 0 #stop top wall movement
@@ -213,13 +194,12 @@ setBuoyancyCase()
 setFullCoupling() # $1 = case velocity, $2 = case power
 {
     printf "Setting case $caseName with power $1 and top wall velocity $2...\n"
-    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
-    # controlDict="$caseName/system/controlDict"
-    # sed \
-    # -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
-    # -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
-    # $controlDict > temp.$$
-    # mv temp.$$ $controlDict
+    controlDict="$caseName/system/controlDict"
+    sed \
+    -e s/"\(solveEnergy[ \t]*\) false;"/"\1 true;"/g \
+    -e s/"\(solveNeutronics[ \t]*\) false;"/"\1 true;"/g \
+    $controlDict > temp.$$
+    mv temp.$$ $controlDict
 
     activateBuoyancy $caseName
     modifyTopWallVelocity $caseName $1
@@ -269,6 +249,8 @@ do
         ;;
     esac
 
+    # printf "Running $exe on $caseName\n"
+    # $exe -case $caseName 2>&1 | tee "$caseName/log.$exe"
     ( cd $caseName && runApplication `getApplication` )
 done
 

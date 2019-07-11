@@ -65,6 +65,9 @@ solvers
 
 PIMPLE
 {
+    initializeSubSolver     false;
+    frozenFlow              false;
+
     momentumPredictor   true;
 
     nCorrectors                 2;
@@ -77,7 +80,7 @@ PIMPLE
     {
         U
         {
-            tolerance   1e-4;
+            tolerance   1e-2;
             relTol      0;
         }
         // p_rgh
