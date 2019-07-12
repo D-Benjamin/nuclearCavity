@@ -9,12 +9,29 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    location    "0/neutroRegion";
-    object      defaultFlux;
+    class       volVectorField;
+    location    "0/fluidRegion";
+    object      U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
+dimensions      [ 0 1 -1 0 0 0 0 ];
 
-// ************************************************************************* //
+internalField   uniform ( 0 0 0 );
+
+boundaryField
+{
+    movingWall
+    {
+        type            fixedValue;
+        value           uniform ( 0.5 0 0 );
+    }
+    fixedWalls
+    {
+        type            noSlip;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}

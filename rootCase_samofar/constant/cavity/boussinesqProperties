@@ -9,12 +9,23 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    location    "0/neutroRegion";
-    object      defaultFlux;
+    class       dictionary;
+    location    "constant";
+    object      boussinesqProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
+compr   false; // true for compressible simulation
+
+// Used only if compr is set to false
+
+// Thermal expansion coefficient
+beta    [0 0 0 -1 0 0 0]    2e-04;
+
+// Reference temperature
+TRef    [0 0 0 1 0 0 0]     900;
+
+// Reference density
+rhoRef  [1 -3 0 0 0 0 0]    2000;
 
 // ************************************************************************* //

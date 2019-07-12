@@ -9,12 +9,41 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    location    "0/neutroRegion";
-    object      defaultFlux;
+    class       dictionary;
+    object      fvSchemes;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
+ddtSchemes
+{
+    default none;
+    ddt(solidPorousModel<rhoCp,TStructures)    Euler;
+}
+
+gradSchemes
+{
+}
+
+divSchemes
+{
+}
+
+laplacianSchemes
+{
+    laplacian(solidPorousModel<kappa,TStructures)   Gauss linear orthogonal;
+}
+
+interpolationSchemes
+{
+}
+
+snGradSchemes
+{
+}
+
+fluxRequired
+{
+}
+
 
 // ************************************************************************* //

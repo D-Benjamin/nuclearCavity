@@ -9,12 +9,32 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    location    "0/neutroRegion";
-    object      defaultFlux;
+    class       dictionary;
+    object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
+solvers
+{
+    TStructures
+    {
+        solver          PCG;
+        preconditioner  FDIC;
+        tolerance       1e-6;
+        relTol          0.01;
+    }
+
+    TStructuresFinal
+    {
+        $TStructures;
+        tolerance       1e-7;
+        relTol          0;
+    }
+}
+
+PIMPLE
+{
+    nOuterCorrectors    1;
+}
 
 // ************************************************************************* //
