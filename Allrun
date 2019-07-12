@@ -9,8 +9,10 @@ regions="cavity"
 
 neutronTransport="neutronTransport"
 
-# cases="0.1 0.2 0.3 1.1 1.3 1.5" #"0.1 0.2 0.3 1.1 1.3 1.5"
-cases="" #"0.1 0.2 0.3 1.1 1.3 1.5"
+rootCase="rootCase"
+# rootCase="rootCase_samofar"
+
+cases="0.1 0.2 0.3 1.1 1.3 1.5" #"0.1 0.2 0.3 1.1 1.3 1.5"
 
 runMapFields()
 {
@@ -238,9 +240,9 @@ for caseName in $cases
 do
     printf "Preparing to run case $caseName...\n"
 
-    printf "Cloning rootCase to case $caseName..."
-    cloneCase rootCase $caseName
-    printf "rootCase cloned!\n"
+    printf "Cloning $rootCase to case $caseName..."
+    cloneCase $rootCase $caseName
+    printf "$rootCase cloned!\n"
 
     runBlockMesh $caseName
 
@@ -273,8 +275,8 @@ do
     ( cd $caseName && runApplication `getApplication` )
 done
 
-power="1.0" #"0.0 0.2 0.4 0.6 0.8 1.0"
-velocity="0.5" #"0.0 0.1 0.2 0.3 0.4 0.5"
+power="" #"0.0 0.2 0.4 0.6 0.8 1.0"
+velocity="" #"0.0 0.1 0.2 0.3 0.4 0.5"
 
 for powerI in $power
 do
@@ -284,10 +286,10 @@ do
 
         printf "Preparing to run case $caseName...\n"
 
-        printf "Cloning rootCase to case $caseName..."
-        # cloneCase ../rootCase $caseName
-        cloneCase rootCase $caseName
-        printf "rootCase cloned!\n"
+        printf "Cloning $rootCase to case $caseName..."
+        # cloneCase ../$rootCase $caseName
+        cloneCase $rootCase $caseName
+        printf "$rootCase cloned!\n"
 
         runBlockMesh $caseName
 

@@ -1,20 +1,30 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  5                                     |
+|  \\    /   O peration     | Version:  5.x                                   |
 |   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
-    version     2.0;
-    format      ascii;
-    class       volScalarField;
-    location    "0/neutroRegion";
-    object      defaultFlux;
+    version         2;
+    format          ascii;
+    class           dictionary;
+    location        "constant";
+    object          neutronicsProperties;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
+crossSectionsModel      samofar;
+
+branches
+(
+);
+
+spatialKineticsModel    diffusion;
+
+fissionProductsModel    advectingSimple;
+
+transient               false;
 
 // ************************************************************************* //

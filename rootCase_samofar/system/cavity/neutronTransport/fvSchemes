@@ -9,12 +9,52 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
-    location    "0/neutroRegion";
-    object      defaultFlux;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "$FOAM_CASE/0/cavity/neutronTransport/fluxDefault";
+ddtSchemes
+{
+    default Euler;
+    // ddt(FP::advectionAdjustment,precursor0.dnp)     Euler;
+}
+
+gradSchemes
+{
+    default none;
+    grad((XS::disp&(1,0,0)))    Gauss linear;
+    grad((XS::disp&(0,1,0)))    Gauss linear;
+    grad((XS::disp&(0,0,1)))    Gauss linear;
+}
+
+divSchemes
+{
+    default none;
+    div(phi,precursor)    Gauss upwind;
+}
+
+laplacianSchemes
+{
+    default none;
+    laplacian((D|discFactor),discFlux)      Gauss linear orthogonal;
+    laplacian(Dmass,precursor)              Gauss linear orthogonal;
+}
+
+interpolationSchemes
+{
+    default none;
+}
+
+snGradSchemes
+{
+    default none;
+}
+
+fluxRequired
+{
+    default false;
+}
 
 // ************************************************************************* //
