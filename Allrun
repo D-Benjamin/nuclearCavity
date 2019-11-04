@@ -19,9 +19,12 @@ run=true
 
 rootCase="rootCase"
 
-cases="0.1 0.2 0.3 1.1 1.3 1.5 1.7"
+cases="0.1 0.2 0.3 1.1 1.3 1.5 1.7 2.0"
 power="0.0 0.2 0.4 0.6 0.8 1.0"
 velocity="0.0 0.1 0.2 0.3 0.4 0.5"
+
+amplitude="0.1"
+periods="1.25 2.50 5.00 10.0 20.0 40.0 80.0"
 
 runMaybe()
 {
@@ -29,6 +32,17 @@ runMaybe()
         ( cd $caseName && runApplication `getApplication` )
     fi
 
+}
+
+prepareCase() # $1 = rootCase $2 = case folder
+{
+    printf "Preparing to run case $2...\n"
+
+    # printf "Cloning $1 to case $2..."
+    cloneCase $1 $2
+    printf "$1 cloned!\n"
+
+    runBlockMesh $2
 }
 
 runMapFields()
@@ -94,7 +108,7 @@ modifyPower() # $1 = case folder, $2 = new power
 {
     printf "Modifying power of case $1 to $2 W..."
     PDict="$1/constant/$regions/$neutronTransport/reactorState"
-    sed -e s/"\(pTarget[ \t]*\) 1.0e+09;"/"\1 $2;"/g $PDict > temp.$$
+    sed -e s/"\(normalizationPower[ \t]*\) 1.0e+09;"/"\1 $2;"/g $PDict > temp.$$
     mv temp.$$ $PDict
     printf "Power modified!\n"
 }
@@ -193,18 +207,38 @@ setBuoyancyCase()
 
 # cases 1.7 (many cases!)
 
-setFullCoupling() # $1 = case velocity, $2 = case power
+setFullCoupling() # $1 = case power, $2 = case velocity
 {
     printf "Setting case $caseName with power $1 and top wall velocity $2...\n"
     foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
 
     activateBuoyancy $caseName
-    modifyTopWallVelocity $caseName $1
-    modifyPower $caseName $2
+    modifyPower $caseName $1
+    modifyTopWallVelocity $caseName $2
     printf "Case set!\n\n"
 }
 
 # PHASE 2 - transient capabilities testing
+setTransient() # $1 = period
+{
+    printf "Setting case $caseName with period of $1...\n"
+    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
+    foamDictionary $caseName/constant/$regions/neutronTransport/neutronicsProperties -entry "neutronicsSolver" -set "transient"
+
+    runMapFields $caseName $fluidRef $regions
+    cp $neutroRef/150/$regions/volPowerFuel* $caseName/200/$regions/
+
+    sourceDict="$caseName/constant/$regions/fvOptions"
+    sed \
+    -e s/"\(scalar amplitude =[ \t]*\) 0;"/"\1 $amplitude;"/g \
+    -e s/"\(scalar period =[ \t]*\) 1.25;"/"\1 $1;"/g \
+    $sourceDict > temp.$$
+    mv temp.$$ $sourceDict
+    printf "Period modified!\n"
+
+    activateBuoyancy $caseName
+    printf "Case set!\n\n"
+}
 
 __usage="
 Usage: Allrun [OPTIONS]
@@ -216,7 +250,7 @@ Options:
 
     -h              Show this help dialogue
 
-    -p              Something something something help
+    -p              Prepare cases only. Don't run them.
 
     -P <string>     Customize power of cases 1.7.
                     e.g.: Allrun -P \"0.0 1.0\"
@@ -224,12 +258,16 @@ Options:
 
     -s              Execute SAMOFAR cases instead of normal one
 
+    -T <string>     Customize transient periods for cases 2.0.
+                    e.g.: Allrun -T \"2.5 7.5\"
+                    defaults to $periods
+
     -V <string>     Customize velocity of cases 1.7.
                     e.g.: Allrun -V \"0.0 0.2 1.0\"
                     defaults to $velocity
 "
 
-while getopts ":C:hpP:sV:" opt;do
+while getopts ":C:hpP:sTV:" opt;do
     case $opt in
     # a)
     #     printf "Executing ALL cases! This will take a long time... go do something else for 2 DAYS!\n\n"
@@ -263,6 +301,10 @@ while getopts ":C:hpP:sV:" opt;do
     #     printf "Test single physics coupled stages full coupling\n\n"
     #     # fairly complex function that takes $OPTARG string and does stuff
     #     ;;
+    T)
+        periods=$OPTARG
+        printf "Periods for case 2.0 set to $periods\n\n"
+        ;;
     V)
         velocity=$OPTARG
         printf "Velocity for case 1.7 set to $velocity\n\n"
@@ -276,41 +318,40 @@ done
 
 for caseName in $cases
 do
-    printf "Preparing to run case $caseName...\n"
-
-    printf "Cloning $rootCase to case $caseName..."
-    cloneCase $rootCase $caseName
-    printf "$rootCase cloned!\n"
-
-    runBlockMesh $caseName
-
     case "$caseName" in
     "0.1")
-        printf "Case 0.1 is prepared!\n"
+        printf "Case 0.1 entered...\n"
+        prepareCase $rootCase $caseName
+        printf "Case set!\n\n"
         runMaybe
         ;;
     "0.2")
         printf "Case 0.2 entered...\n"
+        prepareCase $rootCase $caseName
         setNeutronicsCase
         runMaybe
         ;;
     "0.3")
         printf "Case 0.3 entered...\n"
+        prepareCase $rootCase $caseName
         setEnergyCase
         runMaybe
         ;;
     "1.1")
         printf "Case 1.1 entered...\n"
+        prepareCase $rootCase $caseName
         setCirculatingFuelCase
         runMaybe
         ;;
     "1.3")
         printf "Case 1.3 entered...\n"
+        prepareCase $rootCase $caseName
         setPowerCouplingCase
         runMaybe
         ;;
     "1.5")
         printf "Case 1.5 entered...\n"
+        prepareCase $rootCase $caseName
         setBuoyancyCase
         runMaybe
         ;;
@@ -323,23 +364,46 @@ do
             do
                 caseName="1.7_P${powerI}_U${velocityI}"
 
-                printf "Preparing to run case $caseName...\n"
-
-                printf "Cloning rootCase to case $caseName..."
-                cloneCase rootCase $caseName
-                printf "rootCase cloned!\n"
-
-                runBlockMesh $caseName
+                prepareCase $rootCase $caseName
 
                 if [ $powerI = "0.0" ]; then
                     power0="0.0000001"
-                    setFullCoupling $velocityI $power0
+                    setFullCoupling $power0 $velocityI
                 else
-                    setFullCoupling $velocityI "${powerI}e+09"
+                    setFullCoupling "${powerI}e+09" $velocityI
                 fi
 
                 runMaybe
             done
+        done
+        ;;
+    "2.0")
+        referenceCase="1.7_P${power##* }_U${velocity##* }"
+
+        if [ ! -d $referenceCase ]; then
+            caseName=$referenceCase
+
+            prepareCase $rootCase $caseName
+
+            printf "Preparing to run case $caseName as reference for cases 2.0!\n\n"
+            setFullCoupling ${power##* } ${velocity##* }
+
+            runMaybe
+        else
+            printf "Reference case $referenceCase already exists!\n\n"
+        fi
+
+        printf "Cases 2.0 entered...\n"
+
+        for periodI in $periods
+        do
+            caseName="2.0_T${periodI}"
+
+            prepareCase $referenceCase $caseName
+
+            setTransient $periodI
+
+            runMaybe
         done
         ;;
     esac
