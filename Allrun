@@ -82,6 +82,11 @@ modifyTopWallVelocity() # $1 = case folder, $2 = new velocity
     UDict="$1/0/$regions/U"
     sed s/"0.5 0 0"/"$2 0 0"/g $UDict > temp.$$
     mv temp.$$ $UDict
+
+    # Temporary measure until ATARI transports scalars in the fluid dynamics solver
+    UDict="$1/0/$regions/$neutronTransport/FP:U"
+    sed s/"0.5 0 0"/"$2 0 0"/g $UDict > temp.$$
+    mv temp.$$ $UDict
     printf "Top wall velocity modified!\n"
 }
 

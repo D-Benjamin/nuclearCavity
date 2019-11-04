@@ -9,32 +9,29 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    location    "constant";
-    object      porousMediumProperties;
+    class       volVectorField;
+    location    "0/fluidRegion";
+    object      FP:U;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// constants needed to calculate fluid flow in regions treated as porous medium
-// all cellZones must be included
-// by not defining one of the properties, a default value will be used corresponding to a region of clear fluid
+dimensions      [ 0 1 -1 0 0 0 0 ];
 
-model   solidConstant;
+internalField   uniform ( 0 0 0 );
 
-zones
+boundaryField
 {
-    cavity
+    movingWall
     {
-        rhoCp   1e6;  // Anything will do. There are no structures.
-        kappa   0;
+        type            fixedValue;
+        value           uniform ( 0.5 0 0 );
+    }
+    fixedWalls
+    {
+        type            noSlip;
+    }
+    frontAndBack
+    {
+        type            empty;
     }
 }
-
-
-/*
-Below are listed all possible options for a porous region
-
-    rhoCp               4.8e6; // rho*cp for the subscale structure
-*/
-
-// ************************************************************************* //

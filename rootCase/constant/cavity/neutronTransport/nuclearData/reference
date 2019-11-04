@@ -17,8 +17,6 @@ FoamFile
 energyGroups        6;
 precursorGroups     8;
 
-rhoCoolRef  2000;
-
 lambda      ( 1.246670e-02 2.829170e-02 4.252440e-02 1.330420e-01 2.924670e-01 6.664880e-01 1.634780e+00 3.554600e+00 );
 
 zones

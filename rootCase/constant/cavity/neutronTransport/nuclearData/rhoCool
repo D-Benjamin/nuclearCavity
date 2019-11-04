@@ -37,6 +37,7 @@ FoamFile
 // }
 
 fieldName           rho;
+referenceValue      2000;
 interpolationMode   linear;
 extrapolate         true;
 

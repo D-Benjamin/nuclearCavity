@@ -17,7 +17,7 @@ FoamFile
 ddtSchemes
 {
     default none;
-    ddt(solidPorousModel<rhoCp,TStructures)    Euler;
+    ddt(solidPorous:rhoCp,TStructures)    Euler;
 }
 
 gradSchemes
@@ -30,7 +30,7 @@ divSchemes
 
 laplacianSchemes
 {
-    laplacian(solidPorousModel<kappa,TStructures)   Gauss linear orthogonal;
+    laplacian(solidPorous:kappa,TStructures)   Gauss linear orthogonal;
 }
 
 interpolationSchemes

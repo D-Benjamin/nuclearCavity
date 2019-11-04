@@ -50,12 +50,12 @@ laplacianSchemes
 interpolationSchemes
 {
     default none;
-    interpolate(((zoneData.fluidFraction*rho)*rAU)) linear;
+    interpolate(((fluidPorous:fluidFraction*rho)*rAU)) linear;
     dotInterpolate(S,(rho_0*U_0))       linear;
     interpolate(rho_0)                  linear;
     flux((rho*HbyA))                    linear;
 
-    interpolate(zoneData.fluidFraction) linear;
+    interpolate(fluidPorous:fluidFraction) linear;
 }
 
 snGradSchemes

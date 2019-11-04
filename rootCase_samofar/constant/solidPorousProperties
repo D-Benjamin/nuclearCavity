@@ -19,13 +19,14 @@ FoamFile
 // all cellZones must be included
 // by not defining one of the properties, a default value will be used corresponding to a region of clear fluid
 
-model   solidByZoneCorrelation;
+model   solidConstant;
 
 zones
 {
     cavity
     {
-
+        rhoCp   1e6;  // Anything will do. There are no structures.
+        kappa   0;
     }
 }
 
