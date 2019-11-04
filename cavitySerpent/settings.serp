@@ -1,5 +1,5 @@
 % --- Settings:
-set acelib "/Users/rodrigo/opt/Serpent2/xsdata/XSdata_jeff311/sss_jeff311u.xsdata"
+set acelib "sss_jeff311u.xsdata"
 
 set pop 1000 10000 100
 
