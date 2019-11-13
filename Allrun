@@ -386,7 +386,7 @@ do
             prepareCase $rootCase $caseName
 
             printf "Preparing to run case $caseName as reference for cases 2.0!\n\n"
-            setFullCoupling ${power##* } ${velocity##* }
+            setFullCoupling "${power##* }e+09" ${velocity##* }
 
             runMaybe
         else
