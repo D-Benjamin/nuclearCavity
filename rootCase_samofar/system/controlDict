@@ -59,5 +59,10 @@ maxCo               1; // should be below 1 for CFL condition (necessary to guar
 
 // maxPowerVariation   0.025; //max power variation in each time step
 
+functions
+{
+    #includeFunc logPower
+}
+
 
 // ************************************************************************* //

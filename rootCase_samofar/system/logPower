@@ -1,0 +1,62 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Web:      www.OpenFOAM.org
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+Description
+    Calculates the relative error between the numerical and analytical
+    solution for the problem and writes the field to the last time step.
+
+\*---------------------------------------------------------------------------*/
+
+// Load the library containing the 'coded' functionObject
+libs            ("libutilityFunctionObjects.so");
+
+type coded;
+
+// Name of on-the-fly generated functionObject
+name    logPower;
+
+region  cavity;
+
+writeControl        timeStep;
+writeInterval       1;
+
+codeInclude
+#{
+#};
+
+codeOptions
+#{
+#};
+
+codeRead
+#{
+    OFstream logPower(mesh().time().path()/"logPower.dat");
+    logPower<< "time;power" << endl;
+#};
+//codeExecute
+codeWrite
+// codeEnd
+#{
+    // Lookup phase change field
+    Info<< "Looking up field volPowerFuel\n" << endl;
+    const volScalarField& vpf = mesh().lookupObject<volScalarField>("volPowerFuel");
+
+    // const dimensionedScalar& = mesh().lookupObject<dimensionedScalar>("iterationPower");
+
+    Info<< "Looking up time\n" << endl;
+    const Time& time = mesh().time();
+
+    OFstream logPower
+    (
+        time.path()/"logPower.dat",
+        IOstream::ASCII,
+        6,
+        IOstream::UNCOMPRESSED,
+        true
+    );
+    logPower<< time.value() << ";" << fvc::domainIntegrate(vpf).value() << endl;
+#};

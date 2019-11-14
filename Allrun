@@ -24,7 +24,7 @@ power="0.0 0.2 0.4 0.6 0.8 1.0"
 velocity="0.0 0.1 0.2 0.3 0.4 0.5"
 
 amplitude="0.1"
-periods="1.25 2.50 5.00 10.0 20.0 40.0 80.0"
+periods="1.25 2.5 5 10 20 40 80"
 
 runMaybe()
 {
@@ -39,7 +39,8 @@ prepareCase() # $1 = rootCase $2 = case folder
     printf "Preparing to run case $2...\n"
 
     # printf "Cloning $1 to case $2..."
-    cloneCase $1 $2
+    # cloneCase $1 $2
+    foamCloneCase -latestTime -no-orig $1 $2
     printf "$1 cloned!\n"
 
     runBlockMesh $2
@@ -66,8 +67,8 @@ runMapFields()
 
 activateSIMPLE()
 {
-    printf "Activating SIMPLE algorithm in case $caseName. Setting to 50 outer iterations with residual control..."
-    foamDictionary $caseName/system/fvSolution -entry "PIMPLE.nOuterCorrectors" -set "50"
+    printf "Activating SIMPLE algorithm in case $1. Setting to 50 outer iterations with residual control..."
+    foamDictionary $1/system/fvSolution -entry "PIMPLE.nOuterCorrectors" -set "50"
     printf "SIMPLE activated!\n"
 }
 
@@ -201,7 +202,7 @@ setBuoyancyCase()
 
     activateBuoyancy $caseName
     modifyTopWallVelocity $caseName 0 #stop top wall movement
-    activateSIMPLE
+    activateSIMPLE $caseName
     printf "Case set!\n\n"
 }
 
@@ -222,11 +223,15 @@ setFullCoupling() # $1 = case power, $2 = case velocity
 setTransient() # $1 = period
 {
     printf "Setting case $caseName with period of $1...\n"
-    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
-    foamDictionary $caseName/constant/$regions/neutronTransport/neutronicsProperties -entry "neutronicsSolver" -set "transient"
+    foamDictionary $caseName/system/controlDict -disableFunctionEntries -entry "startFrom" -set "latestTime"
+    foamDictionary $caseName/system/controlDict -disableFunctionEntries -entry "endTime" -set $(echo "200 + $1*10" | bc) # simulate 10 periods
+    foamDictionary $caseName/system/controlDict -disableFunctionEntries -entry "deltaT" -set $(echo "scale=3; $1/250" | bc) # 250 steps per period
+    foamDictionary $caseName/system/controlDict -disableFunctionEntries -entry "writeControl" -set "timeStep"
+    foamDictionary $caseName/system/controlDict -disableFunctionEntries -entry "writeInterval" -set "25"
+    foamDictionary $caseName/system/fvSolution -entry "PIMPLE.nOuterCorrectors" -set "100"
 
-    runMapFields $caseName $fluidRef $regions
-    cp $neutroRef/150/$regions/volPowerFuel* $caseName/200/$regions/
+    foamDictionary $caseName/constant/$regions/solverProperties -entry "fluidDynamicsSolver" -set "porousGenFoamNuclear"
+    foamDictionary $caseName/constant/$regions/neutronTransport/neutronicsProperties -entry "transient" -set "true"
 
     sourceDict="$caseName/constant/$regions/fvOptions"
     sed \
@@ -237,6 +242,7 @@ setTransient() # $1 = period
     printf "Period modified!\n"
 
     activateBuoyancy $caseName
+    # activateSIMPLE $caseName
     printf "Case set!\n\n"
 }
 
